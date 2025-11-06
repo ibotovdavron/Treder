@@ -1,0 +1,2 @@
+Flask==2.3.2
+MetaTrader5==5.0.37
