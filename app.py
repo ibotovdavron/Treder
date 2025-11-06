@@ -1,26 +1,41 @@
-from flask import Flask, request, jsonify
-import datetime
+from flask import Flask, request
+import requests
 
 app = Flask(__name__)
 
-@app.route('/')
-def home():
-    return "TradingView Webhook Bot ishga tushdi ✅"
+# --------------- CONFIG ------------------
+TELEGRAM_TOKEN = "8336758147:AAE5AgN4P4ZUzQihBYxMfE0wwM5ibf7ecJk"             # BotFather-dan oling
+TELEGRAM_CHAT_ID = "@gold_treyder_045"   # Kanal username
+# -----------------------------------------
 
-@app.route('/webhook', methods=['POST'])
+def send_telegram_message(message):
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    data = {"chat_id": TELEGRAM_CHAT_ID, "text": message}
+    try:
+        response = requests.post(url, data=data)
+        if response.status_code != 200:
+            print("Telegram xato:", response.text)
+    except Exception as e:
+        print("Xato:", e)
+
+@app.route("/webhook", methods=["POST"])
 def webhook():
-    data = request.get_json()
-    print("Signal keldi:", data)
+    data = request.json
+    if not data:
+        return "No data received", 400
 
+    symbol = data.get("symbol")
     signal = data.get("signal")
-    symbol = data.get("symbol", "XAUUSD")
-    lot = data.get("lot", 0.5)
 
-    if signal == "BUY":
-        print(f"🟢 BUY signal: {symbol} uchun {lot} lot ochiladi.")
-    elif signal == "SELL":
-        print(f"🔴 SELL signal: {symbol} uchun {lot} lot ochiladi.")
+    # Faqat XAUUSD signallari
+    if symbol == "XAUUSD" and signal:
+        message = f"⚡ OLTIN SIGNAL ⚡\nSignal: {signal}\nSymbol: {symbol}"
+        send_telegram_message(message)
+        print("Signal yuborildi:", message)
     else:
-        print("⚠️ Noma’lum signal:", signal)
+        print("XAUUSD emas yoki signal yo'q:", data)
 
-    return jsonify(status="ok", time=str(datetime.datetime.now()))
+    return "OK", 200
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
