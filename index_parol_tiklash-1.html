@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#070b14">
+  <title>So‘fi Ollohyor — O‘quv markazi</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #070b14;
+      --card: #111c2e;
+      --border: #30415b;
+      --text: #f5f7ff;
+      --muted: #a9b7cd;
+      --blue: #60a5fa;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at top, #142743, var(--bg) 70%);
+      color: var(--text);
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+    }
+
+    main {
+      width: min(100% - 28px, 600px);
+      margin: auto;
+      padding: 24px 0;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 26px;
+    }
+
+    .logo {
+      width: 64px;
+      height: 64px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #526986;
+      border-radius: 20px;
+      background: linear-gradient(145deg, #203b5c, #111c2e);
+      font-size: 32px;
+    }
+
+    h1 { font-size: 22px; margin: 0 0 6px; }
+    h2 { font-size: 19px; margin: 28px 0 14px; }
+    p { color: var(--muted); line-height: 1.5; }
+
+    .subtitle { margin: 0; }
+
+    .card {
+      background: rgba(17, 28, 46, .95);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 18px;
+      margin: 12px 0;
+    }
+
+    .card h3 { margin: 0 0 10px; }
+    .muted { color: var(--muted); }
+
+    nav {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin: 22px 0;
+    }
+
+    button, .nav-button {
+      font: inherit;
+      color: var(--text);
+      background: #1b2b43;
+      border: 1px solid #344965;
+      border-radius: 14px;
+      padding: 15px 12px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    button:active { transform: scale(.98); }
+    button.primary { background: #245ba6; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+
+    input, select, textarea {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 13px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #0b1321;
+      color: var(--text);
+      font: inherit;
+    }
+
+    textarea { min-height: 90px; resize: vertical; }
+
+    .hidden { display: none !important; }
+
+    .notice {
+      padding: 14px;
+      background: #18263b;
+      border-radius: 14px;
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+
+    footer {
+      text-align: center;
+      margin: 32px 0 10px;
+      font-size: 13px;
+      color: #8291a8;
+    }
+  </style>
+</head>
+
+<body>
+<main>
+  <header>
+    <div class="logo">✦</div>
+    <div>
+      <h1>So‘fi Ollohyor</h1>
+      <p class="subtitle">O‘quv markazi · Bilim sari qadam</p>
+    </div>
+  </header>
+
+  <section id="home">
+    <div class="card">
+      <p>ASSALOMU ALAYKUM!</p>
+      <h2>Bilim sari dadil qadam</h2>
+      <p>Jadvalingizni ko‘ring, yutuqlaringizni kuzating va bilimlaringizni oshiring.</p>
+    </div>
+
+    <nav>
+      <button onclick="showPage('schedule')">📅 Dars jadvali</button>
+      <button onclick="showPage('stars')">⭐ Mening yulduzlarim</button>
+      <button onclick="showPage('ranking')">🏆 Reyting</button>
+      <button onclick="showPage('apply')">📝 Ariza yuborish</button>
+      <button onclick="showPage('tests')">📚 Testlar</button>
+      <button onclick="showPage('admin')">🔐 Administrator</button>
+    </nav>
+    <div id="connection" class="notice">Ma’lumotlar ulanishi tekshirilmoqda...</div>
+  </section>
+
+  <section id="schedule" class="hidden">
+    <button onclick="showPage('home')">← Bosh sahifa</button>
+    <h2>📅 Dars jadvali</h2>
+    <div id="scheduleList" class="notice">Jadval yuklanmoqda...</div>
+  </section>
+
+ 
+<section id="stars" class="hidden">
+  <button onclick="showPage('home')">← Bosh sahifa</button>
+  <h2>⭐ Umumiy Top 10</h2>
+  <p class="subtitle">So‘fi Ollohyor o‘quvchilari reytingi</p>
+
+  <div id="starsList" class="notice">
+    Reyting yuklanmoqda...
+  </div>
+</section>
+
+
+  <section id="ranking" class="hidden">
+    <button onclick="showPage('home')">← Bosh sahifa</button>
+    <h2>🏆 O‘quvchilar reytingi</h2>
+    <div id="rankingList" class="notice">
+      Reyting hozircha mavjud emas.
+    </div>
+  </section>
+
+  <section id="apply" class="hidden">
+    <button onclick="showPage('home')">← Bosh sahifa</button>
+    <h2>📝 O‘qishga ariza</h2>
+    <form id="applyForm">
+      <input name="full_name" placeholder="Ism va familiya" required maxlength="120">
+      <input name="phone" placeholder="Telefon raqami" required maxlength="30">
+      <input name="course" placeholder="Kurs nomi" required maxlength="100">
+      <textarea name="message" placeholder="Qo‘shimcha ma’lumot (ixtiyoriy)" maxlength="1000"></textarea>
+      <button class="primary" type="submit">Arizani yuborish</button>
+    </form>
+    <p id="applyStatus" role="status"></p>
+  </section>
+
+  <section id="tests" class="hidden">
+    <button onclick="showPage('home')">← Bosh sahifa</button>
+    <h2>📚 Testlar</h2>
+    <div class="notice">Testlar bo‘limi keyingi bosqichda mavjud testlar bazasiga ulanadi.</div>
+  </section>
+
+  
+<section id="admin" class="hidden">
+  <button onclick="showPage('home')">← Bosh sahifa</button>
+  <h2>🔐 Administrator paneli</h2>
+
+  <form id="adminLoginForm" class="card">
+    <label for="adminEmail">Email manzil</label>
+    <input
+      id="adminEmail"
+      type="email"
+      value="ibotovdavron.ok@gmail.com"
+      autocomplete="username"
+      required
+    >
+
+    <label for="adminPassword">Parol</label>
+    <input
+      id="adminPassword"
+      type="password"
+      autocomplete="current-password"
+      placeholder="Supabase parolingiz"
+      required
+    >
+
+    <button class="primary" type="submit">🔐 Kirish</button>
+    <p id="adminLoginStatus" role="status"></p>
+  </form>
+
+  <div id="adminDashboard" class="card hidden">
+    <h3>✅ Administrator tasdiqlandi</h3>
+    <p>So‘fi Ollohyor boshqaruv paneliga xush kelibsiz!</p>
+    <button type="button" onclick="adminLogout()">Chiqish</button>
+  </div>
+</section>
+  
+
+
+  <section id="resetPassword" class="hidden">
+    <h2>🔑 Yangi parol o‘rnatish</h2>
+    <div class="card">
+      <p>Yangi parolingizni ikki marta kiriting.</p>
+      <form id="resetPasswordForm">
+        <label for="newPassword">Yangi parol</label>
+        <input id="newPassword" type="password" minlength="8"
+          autocomplete="new-password" placeholder="Kamida 8 ta belgi" required>
+        <label for="confirmPassword">Parolni qayta kiriting</label>
+        <input id="confirmPassword" type="password" minlength="8"
+          autocomplete="new-password" placeholder="Parolni takrorlang" required>
+        <button class="primary" type="submit">Parolni saqlash</button>
+        <p id="resetPasswordStatus" role="status"></p>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    So‘fi Ollohyor o‘quv markazi<br>
+    Bilim · Intizom · Natija
+  </footer>
+</main>
+
+<script>
+  const tg = window.Telegram?.WebApp;
+  tg?.ready();
+  tg?.expand();
+
+  // Supabase loyihangizning Project URL va Publishable key qiymatlarini kiriting.
+  const SUPABASE_URL = "https://oteokizwakceztwrocol.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_grAALEVaJmy54E6kqLiNyg_QOaq4GOg";
+
+  let db = null;
+
+  if (
+    window.supabase &&
+    SUPABASE_URL.startsWith("https://") &&
+    SUPABASE_URL.endsWith(".supabase.co") &&
+    SUPABASE_KEY.startsWith("sb_publishable_")
+  ) {
+    db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  }
+
+  function showPage(id) {
+    document.querySelectorAll("main > section").forEach(section => {
+      section.classList.add("hidden");
+    });
+
+    document.getElementById(id).classList.remove("hidden");
+
+    if (id === "schedule") loadSchedule();
+    if (id === "stars") loadStars();
+    if (id === "ranking") loadRanking();
+  }
+  
+async function loadStars() {
+  const output = document.getElementById("starsList");
+
+  if (!db) {
+    output.textContent = "Supabase bilan ulanish sozlanmagan.";
+    return;
+  }
+
+  output.textContent = "Reyting yuklanmoqda...";
+
+  const { data, error } = await db
+    .from("student_star_ranking")
+    .select("student_id, full_name, class_name, avatar_url, total_stars")
+    .order("total_stars", { ascending: false })
+    .limit(10);
+
+  if (error) {
+    console.error("Reyting xatosi:", error.message);
+    output.textContent =
+      "Reyting yuklanmadi. Supabase ruxsatlarini tekshirish kerak.";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    output.textContent = "Hozircha reytingda o‘quvchilar yo‘q.";
+    return;
+  }
+
+  output.replaceChildren();
+
+  data.forEach((student, index) => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const row = document.createElement("div");
+    row.style.display = "flex";
+    row.style.alignItems = "center";
+    row.style.gap = "12px";
+    row.style.marginBottom = "12px";
+
+    const rank = document.createElement("strong");
+    rank.textContent = `${index + 1}.`;
+    rank.style.minWidth = "24px";
+
+    const avatar = document.createElement("div");
+    avatar.style.width = "48px";
+    avatar.style.height = "48px";
+    avatar.style.borderRadius = "50%";
+    avatar.style.overflow = "hidden";
+    avatar.style.flexShrink = "0";
+    avatar.style.background = "#26364e";
+    avatar.style.display = "grid";
+    avatar.style.placeItems = "center";
+
+    if (student.avatar_url) {
+      const img = document.createElement("img");
+      img.src = student.avatar_url;
+      img.alt = "";
+      img.loading = "lazy";
+      img.referrerPolicy = "no-referrer";
+      img.style.width = "100%";
+      img.style.height = "100%";
+      img.style.objectFit = "cover";
+      img.onerror = () => {
+        avatar.replaceChildren();
+        avatar.textContent = "👤";
+      };
+      avatar.appendChild(img);
+    } else {
+      avatar.textContent = "👤";
+    }
+
+    const details = document.createElement("div");
+    details.style.flex = "1";
+    details.style.minWidth = "0";
+
+    const name = document.createElement("strong");
+    name.textContent = student.full_name || "O‘quvchi";
+
+    const className = document.createElement("p");
+    className.textContent = student.class_name || "Sinf belgilanmagan";
+    className.style.margin = "4px 0 0";
+
+    const stars = document.createElement("strong");
+    stars.textContent = `⭐ ${student.total_stars ?? 0}`;
+
+    details.append(name, className);
+    row.append(rank, avatar, details, stars);
+    card.appendChild(row);
+    output.appendChild(card);
+  });
+}
+
+  async function loadRanking() {
+  const output = document.getElementById("rankingList");
+
+  if (!db) {
+    output.textContent = "Supabase bilan ulanish sozlanmagan.";
+    return;
+  }
+
+  output.textContent = "Reyting yuklanmoqda...";
+
+  const { data, error } = await db
+    .from("student_star_ranking")
+    .select("student_id, full_name, class_name, avatar_url, total_stars")
+    .order("total_stars", { ascending: false })
+    .limit(10);
+
+  if (error) {
+    console.error("Reyting xatosi:", error.message);
+    output.textContent = "Reyting yuklanmadi. Supabase ruxsatlarini tekshiring.";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    output.textContent = "Hozircha reytingda o‘quvchilar yo‘q.";
+    return;
+  }
+
+  output.replaceChildren();
+
+  data.forEach((student, index) => {
+    const card = document.createElement("div");
+    card.className = "notice";
+
+    const name = document.createElement("strong");
+    name.textContent = `${index + 1}. ${student.full_name || "Noma’lum o‘quvchi"}`;
+
+    const stars = document.createElement("p");
+    stars.textContent = `⭐ ${student.total_stars ?? 0} ta yulduz`;
+
+    const classInfo = document.createElement("p");
+    classInfo.textContent = student.class_name
+      ? `Sinf: ${student.class_name}`
+      : "Sinf ko‘rsatilmagan";
+
+    card.append(name, stars, classInfo);
+    output.appendChild(card);
+  });
+  }
+
+  async function loadSchedule() {
+    const output = document.getElementById("scheduleList");
+
+    if (!db) {
+      output.textContent = "Supabase URL va Publishable key hali kiritilmagan.";
+      return;
+    }
+
+    output.textContent = "Jadval yuklanmoqda...";
+
+    const { data, error } = await db
+      .from("schedule_items")
+      .select("*")
+      .limit(100);
+
+    if (error) {
+      output.textContent = "Jadvalni yuklab bo‘lmadi. Supabase ruxsatlarini tekshiring.";
+      console.error(error.message);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      output.textContent = "Hozircha jadvalda ma’lumot yo‘q.";
+      return;
+    }
+
+    output.replaceChildren();
+
+    data.forEach(item => {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const title = document.createElement("h3");
+      title.textContent = item.class_name || "Dars";
+
+      const details = document.createElement("p");
+      details.textContent = [
+        item.subject ? "Fan: " + item.subject : "",
+        item.lesson_day ? "Kun: " + item.lesson_day : "",
+        item.lesson_time ? "Vaqt: " + item.lesson_time : "",
+        item.teacher_name ? "Ustoz: " + item.teacher_name : ""
+      ].filter(Boolean).join("\n");
+
+      card.append(title, details);
+      output.appendChild(card);
+    });
+  }
+
+  document.getElementById("applyForm").addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const status = document.getElementById("applyStatus");
+
+    if (!db) {
+      status.textContent = "Avval Supabase ulanishini sozlash kerak.";
+      return;
+    }
+
+    const form = new FormData(event.currentTarget);
+    const record = {
+      full_name: String(form.get("full_name") || "").trim(),
+      phone: String(form.get("phone") || "").trim()
+    };
+
+    // applications jadvaliga faqat uning haqiqiy ustunlari ma’lum
+    // bo‘lgani uchun hozircha kurs va izoh bazaga yozilmaydi.
+    if (!record.full_name || !record.phone) {
+      status.textContent = "Ism va telefon raqamini kiriting.";
+      return;
+    }
+
+    status.textContent = "Ariza yuborilmoqda...";
+
+    const { error } = await db.from("applications").insert(record);
+
+    if (error) {
+      status.textContent =
+        "Ariza yuborilmadi. Jadval ustunlari va INSERT siyosatini tekshirish kerak.";
+      console.error(error.message);
+      return;
+    }
+
+    status.textContent = "Arizangiz yuborildi!";
+    event.currentTarget.reset();
+  });
+
+  document.getElementById("connection").textContent = db
+    ? "Supabase sozlangan. Bo‘limlar ma’lumotlar bazasiga ulanmoqda."
+    : "Supabase URL va Publishable key hali kiritilmagan.";
+
+
+  // Supabase parol tiklash havolasi bilan kelganda yangi parol oynasini ko‘rsatish.
+  async function handlePasswordRecovery() {
+    const status = document.getElementById("resetPasswordStatus");
+    const section = document.getElementById("resetPassword");
+    if (!db || !section) return;
+
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const recoveryType = hash.get("type") === "recovery";
+    const query = new URLSearchParams(window.location.search);
+    const code = query.get("code");
+
+    if (recoveryType) {
+      showPage("resetPassword");
+      status.textContent = "Tiklash havolasi tasdiqlandi. Yangi parol kiriting.";
+      return;
+    }
+
+    // PKCE usulida kelgan havolani Supabase sessiyasiga almashtirish.
+    if (code) {
+      const { error } = await db.auth.exchangeCodeForSession(code);
+      if (error) {
+        showPage("resetPassword");
+        status.textContent = "Havola eskirgan yoki ishlatilgan. Yangi tiklash xatini so‘rang.";
+        return;
+      }
+      showPage("resetPassword");
+      status.textContent = "Yangi parol kiriting.";
+    }
+  }
+
+  document.getElementById("resetPasswordForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const status = document.getElementById("resetPasswordStatus");
+    const password = document.getElementById("newPassword").value;
+    const confirm = document.getElementById("confirmPassword").value;
+
+    if (password.length < 8) {
+      status.textContent = "Parol kamida 8 ta belgidan iborat bo‘lsin.";
+      return;
+    }
+    if (password !== confirm) {
+      status.textContent = "Parollar bir-biriga mos emas.";
+      return;
+    }
+    if (!db) {
+      status.textContent = "Supabase bilan ulanish mavjud emas.";
+      return;
+    }
+
+    status.textContent = "Parol yangilanmoqda...";
+    const { error } = await db.auth.updateUser({ password });
+
+    if (error) {
+      status.textContent = "Parol yangilanmadi. Havola eskirgan bo‘lishi mumkin. Yangi tiklash xatini so‘rang.";
+      console.error("Parolni yangilash xatosi:", error.message);
+      return;
+    }
+
+    status.textContent = "Parol muvaffaqiyatli yangilandi. Endi Administrator bo‘limidan yangi parol bilan kiring.";
+    document.getElementById("resetPasswordForm").reset();
+    await db.auth.signOut();
+    history.replaceState(null, "", window.location.pathname);
+  });
+
+  // Sahifa yuklanganda tiklash havolasi bor-yo‘qligini tekshiramiz.
+  handlePasswordRecovery();
+
+</script>
+</body>
+</html>
