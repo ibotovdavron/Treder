@@ -1,0 +1,518 @@
+
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#020b09">
+  <meta name="description" content="So‘fi Ollohyor o‘quv markazi — kunlik savol">
+  <title>Kunlik savol | So‘fi Ollohyor</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    .daily-page {
+      max-width: 850px;
+      margin: 35px auto;
+      padding-bottom: 25px;
+    }
+
+    .daily-intro {
+      text-align: center;
+      padding: 25px 12px;
+    }
+
+    .daily-intro .big-icon { font-size: 60px; }
+
+    .daily-intro h1 {
+      font-size: clamp(30px, 6vw, 46px);
+      margin: 14px 0;
+    }
+
+    .daily-intro p,
+    .daily-muted {
+      color: #b7cebf;
+      line-height: 1.8;
+    }
+
+    .daily-card {
+      padding: 24px;
+      border-radius: 24px;
+      border: 1px solid rgba(0,255,128,.28);
+      background: linear-gradient(145deg,#09251a,#020b09);
+      color: #f4fff8;
+      box-shadow: 0 10px 35px rgba(0,0,0,.18);
+    }
+
+    #dailyQuestionText {
+      font-size: 21px;
+      line-height: 1.7;
+      font-weight: 700;
+      margin: 18px 0;
+    }
+
+    .daily-answer-input,
+    .daily-student-select {
+      display: block;
+      box-sizing: border-box;
+      width: 100%;
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 12px;
+      font-size: 16px;
+      border: 1px solid #286343;
+      background: #fff;
+      color: #111;
+    }
+
+    .daily-feedback {
+      margin-top: 18px;
+      line-height: 1.8;
+      overflow-wrap: anywhere;
+    }
+
+    .daily-winner {
+      margin-top: 18px;
+      padding: 15px;
+      border-radius: 14px;
+      background: rgba(56,237,145,.08);
+      border: 1px solid rgba(56,237,145,.22);
+      line-height: 1.7;
+    }
+
+    .daily-winner:empty { display: none; }
+
+    .daily-rules {
+      margin-top: 20px;
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(0,255,128,.15);
+    }
+
+    .daily-rules li {
+      margin: 10px 0;
+      line-height: 1.6;
+    }
+
+    .daily-button { margin-top: 10px; }
+
+    .daily-card button:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .daily-status {
+      padding: 12px;
+      border-radius: 12px;
+      margin-top: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .daily-status.error {
+      color: #ffd6d6;
+      background: rgba(255,40,40,.1);
+      border: 1px solid rgba(255,80,80,.25);
+    }
+
+    .daily-status.success {
+      color: #b9ffd3;
+      background: rgba(0,255,128,.08);
+    }
+
+    @media(max-width:520px) {
+      .daily-card { padding: 17px; }
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+<link rel="stylesheet" href="premium.css">
+</head>
+
+<body>
+<header class="topbar">
+  <div class="wrap topinner">
+    <a class="brand" href="index.html">
+      <img src="assets/markaz-logo.png"
+           alt="So‘fi Ollohyor logotipi"
+           onerror="this.style.display='none'">
+      <span class="brand-mark">S<span class="green">O</span></span>
+      <span class="brand-name">
+        SO‘FI OLLOHYOR
+        <small>O‘QUV MARKAZI</small>
+      </span>
+    </a>
+
+    <div class="social">
+      <a href="https://t.me/sufi_ollohyor_uquv_markaz"
+         target="_blank" rel="noopener noreferrer">✈️ Telegram</a>
+      <a href="https://www.instagram.com/sufiollohyor/"
+         target="_blank" rel="noopener noreferrer">📸 Instagram</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap daily-page">
+  <section class="daily-intro">
+    <div class="big-icon">🧠</div>
+    <span class="eyebrow">SO‘FI OLLOHYOR O‘QUV MARKAZI</span>
+    <h1>Kunlik <span class="green">savol</span></h1>
+    <p>To‘g‘ri javob bering va bugungi g‘olib bo‘lishga harakat qiling!</p>
+  </section>
+
+  <section class="daily-card" id="dailyQuestionSection">
+    <span class="tag">🏆 BILIMLAR BELLASHUVI</span>
+    <h2>📌 Savol</h2>
+
+    <div id="dailyQuestionText">Savol yuklanmoqda...</div>
+
+    <form id="dailyAnswerForm">
+      <label for="dailyAnswerInput">Javobingiz:</label>
+      <input id="dailyAnswerInput"
+             class="daily-answer-input"
+             type="text"
+             placeholder="Javobingizni yozing..."
+             autocomplete="off"
+             required>
+
+      <button type="submit" class="btn" id="dailyCheck">
+        Javobni tekshirish
+      </button>
+    </form>
+
+    <div id="dailyFeedback"
+         class="daily-feedback"
+         aria-live="polite"
+         role="status"></div>
+
+    <div id="dailyStudentBox"></div>
+
+    <div id="dailyWinner"
+         class="daily-winner"
+         aria-live="polite"></div>
+  </section>
+
+  <section class="daily-rules panel">
+    <h2>📋 Qanday ishlaydi?</h2>
+    <ul>
+      <li>Javobni o‘zingiz yozasiz.</li>
+      <li>To‘g‘ri javobdan keyin ro‘yxatdan ismingizni tanlaysiz.</li>
+      <li>Har bir savol ID raqami uchun faqat bitta g‘olib qayd etiladi.</li>
+      <li>G‘olib uchun 2 yulduz mukofoti bazada saqlanadi.</li>
+      <li>G‘olib natijasi boshqa qurilmalarda ham ko‘rinadi.</li>
+    </ul>
+  </section>
+
+  <section class="panel">
+    <h2>🏆 O‘quvchilar reytingi</h2>
+    <p class="daily-muted">
+      O‘quvchilar natijalarini reyting sahifasida ko‘ring.
+    </p>
+    <a class="btn" href="ranking.html">Reytingni ko‘rish →</a>
+  </section>
+</main>
+
+<footer class="footer wrap">
+  © 2026 So‘fi Ollohyor o‘quv markazi · Oltinsoy tumani
+  <br>
+  <span class="smallprint">Bilim · Tarbiya · Natija</span>
+</footer>
+
+<nav class="bottom-nav" id="bottomNav" aria-label="Asosiy menyu"></nav>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+
+<script>
+(function () {
+  "use strict";
+
+  const $ = id => document.getElementById(id);
+
+  const questionBox = $("dailyQuestionText");
+  const form = $("dailyAnswerForm");
+  const input = $("dailyAnswerInput");
+  const checkButton = $("dailyCheck");
+  const feedback = $("dailyFeedback");
+  const studentBox = $("dailyStudentBox");
+  const winnerBox = $("dailyWinner");
+
+  const question = window.DAILY_QUESTION;
+  const students = (window.CENTER_DATA || {}).students || [];
+  const config = window.SUFIOLLOHYOR_CONFIG;
+
+  let db = null;
+  let winnerLocked = false;
+  let loadingWinner = false;
+  let submitting = false;
+  let pollingTimer = null;
+
+  function normalize(value) {
+    return String(value || "")
+      .trim()
+      .toLocaleLowerCase("uz-UZ")
+      .replace(/[‘’ʻ`']/g, "")
+      .replace(/\s+/g, " ");
+  }
+
+  function showFeedback(message, type) {
+    feedback.textContent = message;
+    feedback.className = "daily-feedback";
+
+    if (type) {
+      feedback.classList.add("daily-status", type);
+    }
+  }
+
+  function getStudentName(student) {
+    if (typeof student === "string") {
+      return student.trim();
+    }
+
+    if (student && typeof student === "object") {
+      return String(
+        student.name || student.full_name || ""
+      ).trim();
+    }
+
+    return "";
+  }
+
+  function lockForm() {
+    winnerLocked = true;
+    input.disabled = true;
+    checkButton.disabled = true;
+    studentBox.replaceChildren();
+  }
+
+  function showWinner(name, stars) {
+    winnerBox.textContent =
+      `🏆 Ushbu savol g‘olibi — ${name} 🎉 ⭐ ${stars} ta yulduz`;
+
+    lockForm();
+  }
+
+  function showDetailedError(prefix, error) {
+    console.error(prefix, error);
+
+    const message = error && error.message
+      ? error.message
+      : String(error || "Noma’lum xatolik");
+
+    const code = error && error.code
+      ? ` | Kod: ${error.code}`
+      : "";
+
+    showFeedback(`${prefix}: ${message}${code}`, "error");
+  }
+
+  async function loadWinner() {
+    if (!db || loadingWinner || !question || !question.id) return;
+
+    loadingWinner = true;
+
+    try {
+      const { data, error } = await db
+        .from("question_winners")
+        .select("student_name, stars")
+        .eq("question_id", String(question.id).trim())
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data && data.student_name) {
+        showWinner(data.student_name, data.stars || 2);
+        showFeedback(
+          "Ushbu savolning g‘olibi bazada saqlangan.",
+          "success"
+        );
+      } else if (!winnerLocked) {
+        winnerBox.textContent = "";
+        input.disabled = false;
+        checkButton.disabled = false;
+        showFeedback("Bu savol uchun hali g‘olib aniqlanmagan.");
+      }
+    } catch (error) {
+      showDetailedError("G‘olibni yuklash xatosi", error);
+    } finally {
+      loadingWinner = false;
+    }
+  }
+
+  function buildStudentPicker() {
+    if (winnerLocked) return;
+
+    if (!Array.isArray(students) || students.length === 0) {
+      showFeedback(
+        "O‘quvchilar ro‘yxati topilmadi. data.js faylini tekshiring.",
+        "error"
+      );
+      return;
+    }
+
+    studentBox.replaceChildren();
+
+    const label = document.createElement("label");
+    label.textContent =
+      "O‘quvchilar ro‘yxatidan ismingizni tanlang:";
+    label.htmlFor = "dailyStudentSelect";
+
+    const select = document.createElement("select");
+    select.id = "dailyStudentSelect";
+    select.className = "daily-student-select";
+    select.required = true;
+
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "Ismingizni tanlang...";
+    select.appendChild(placeholder);
+
+    students.forEach((student, index) => {
+      const name = getStudentName(student);
+      if (!name) return;
+
+      const option = document.createElement("option");
+      option.value = String(index);
+      option.textContent = name;
+      select.appendChild(option);
+    });
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "btn daily-button";
+    button.textContent = "Ismimni tasdiqlash";
+
+    studentBox.append(label, select, button);
+
+    showFeedback("✅ Javob to‘g‘ri! Endi ismingizni tanlang.", "success");
+
+    button.addEventListener("click", async function () {
+      if (winnerLocked || submitting) return;
+
+      if (!select.value) {
+        showFeedback("Avval ro‘yxatdan ismingizni tanlang.", "error");
+        return;
+      }
+
+      const name = getStudentName(students[Number(select.value)]);
+
+      if (!name) {
+        showFeedback("Tanlangan o‘quvchining ismi topilmadi.", "error");
+        return;
+      }
+
+      submitting = true;
+      button.disabled = true;
+      select.disabled = true;
+      button.textContent = "Saqlanmoqda...";
+
+      try {
+        const { data, error } = await db.rpc(
+          "claim_question_winner",
+          {
+            p_question_id: String(question.id).trim(),
+            p_student_name: name
+          }
+        );
+
+        if (error) throw error;
+
+        const result = Array.isArray(data) ? data[0] : data;
+
+        if (!result || !result.winner_name) {
+          throw new Error("SQL funksiyasidan g‘olib natijasi qaytmadi.");
+        }
+
+        showWinner(
+          result.winner_name,
+          result.awarded_stars || 2
+        );
+
+        if (result.is_new_winner === true) {
+          showFeedback(
+            `🎉 Tabriklaymiz, ${result.winner_name}! Ushbu savol g‘olibi sifatida qayd etildingiz. 2 yulduz mukofoti saqlandi.`,
+            "success"
+          );
+        } else {
+          showFeedback(
+            `Ushbu savolning g‘olibi avval aniqlangan: ${result.winner_name}. Yangi g‘olib yozilmadi.`,
+            "success"
+          );
+        }
+      } catch (error) {
+        showDetailedError("G‘olibni saqlash xatosi", error);
+        button.disabled = false;
+        select.disabled = false;
+        button.textContent = "Qayta urinish";
+      } finally {
+        submitting = false;
+      }
+    });
+  }
+
+  if (!question || !question.id || !question.text || !question.answer) {
+    questionBox.textContent =
+      "Savol ma’lumoti to‘liq emas. data.js faylida DAILY_QUESTION uchun id, text va answer maydonlarini kiriting.";
+
+    form.hidden = true;
+    return;
+  }
+
+  questionBox.textContent = question.text;
+
+  if (
+    !config ||
+    !config.SUPABASE_URL ||
+    !config.SUPABASE_ANON_KEY ||
+    !window.supabase
+  ) {
+    showFeedback(
+      "Supabase sozlamalari topilmadi. config.js va Supabase kutubxonasini tekshiring.",
+      "error"
+    );
+
+    form.hidden = true;
+    return;
+  }
+
+  try {
+    db = window.supabase.createClient(
+      config.SUPABASE_URL,
+      config.SUPABASE_ANON_KEY
+    );
+  } catch (error) {
+    showDetailedError("Supabase ulanishini boshlash xatosi", error);
+    form.hidden = true;
+    return;
+  }
+
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    if (winnerLocked || submitting) return;
+
+    if (normalize(input.value) !== normalize(question.answer)) {
+      showFeedback("❌ Javob noto‘g‘ri. Qayta urinib ko‘ring.", "error");
+      return;
+    }
+
+    buildStudentPicker();
+  });
+
+  loadWinner();
+
+  pollingTimer = window.setInterval(function () {
+    if (!document.hidden) loadWinner();
+  }, 10000);
+
+  window.addEventListener("pagehide", function () {
+    if (pollingTimer !== null) {
+      window.clearInterval(pollingTimer);
+    }
+  });
+})();
+</script>
+
+<script src="fx.js" defer></script>
+</body>
+</html>

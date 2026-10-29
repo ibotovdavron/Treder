@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#087b45">
+<title>So‘fi Ollohyor — Bilmasvoy</title>
+<style>
+:root{--green:#07834b;--green2:#16a765;--pale:#e9fff0;--ink:#123c2c;--line:#c8efd6;--white:#fff}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#e7fff0,#f8fff9);color:var(--ink)}
+button,select{font:inherit}
+.top{background:linear-gradient(110deg,#00683b,#1aa966);color:#fff;padding:18px 22px 17px;border-radius:0 0 28px 28px;box-shadow:0 8px 22px #00683b22}
+.topline{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brand{font-size:clamp(18px,4vw,28px);font-weight:900;letter-spacing:-.5px}
+.leaf{font-size:27px;margin-right:8px}
+.subtitle{margin:8px 0 0;font-size:14px;opacity:.94}
+.stars{border:1px solid #ffffff77;background:#ffffff20;border-radius:30px;padding:9px 14px;font-weight:800;white-space:nowrap}
+.wrap{max-width:1200px;margin:auto;padding:18px}
+.games{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.gamecard{background:#ffffffd9;border:1px solid var(--line);border-radius:23px;padding:18px;box-shadow:0 8px 20px #087b4510}
+.gamecard.race{background:linear-gradient(135deg,#fff,#dfffe8);border:2px solid #b8edcb}
+.cardtop{display:flex;align-items:center;gap:14px}
+.emoji{width:88px;height:78px;border-radius:18px;background:#edfff2;display:grid;place-items:center;font-size:48px;flex-shrink:0}
+.tag{display:inline-block;background:#d9f8e4;color:#08683d;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:850}
+h2{font-size:21px;margin:8px 0;color:#08683d}
+.gamecard p{font-size:14px;line-height:1.55;margin:6px 0 14px}
+.primary,.secondary{width:100%;border:0;border-radius:15px;padding:12px 15px;font-weight:850;cursor:pointer}
+.primary{background:linear-gradient(90deg,#087b45,#13a15b);color:white}
+.secondary{background:#fff;border:1px solid #a8e3bd;color:#075b35}
+.primary:active,.secondary:active,.choice:active,.control:active{transform:scale(.98)}
+.profile{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 16px}
+.profile input,.profile select{border:1px solid var(--line);border-radius:12px;padding:10px;background:white;color:var(--ink);min-width:130px;flex:1}
+.panel{display:none}.panel.active{display:block}
+.racebox{position:relative;overflow:hidden;border-radius:27px;background:#284e37;box-shadow:0 14px 28px #003a1e24}
+.hud{position:absolute;z-index:4;top:13px;left:13px;right:13px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;pointer-events:none}
+.huditem{background:#122c2bd9;color:#fff;border:1px solid #ffffff45;border-radius:17px;padding:8px 12px;font-size:13px;backdrop-filter:blur(7px);text-align:center}
+.huditem strong{display:block;font-size:20px;line-height:1.15}
+.progress{width:100px;height:8px;background:#ffffff80;border-radius:20px;margin-top:5px;overflow:hidden}
+.progress span{display:block;height:100%;width:30%;background:#26e69a;border-radius:20px;transition:width .3s}
+.scene{height:470px;position:relative;overflow:hidden;background:linear-gradient(#66c5ff 0%,#d4f2ff 35%,#74b75b 36%,#236d3e 60%,#777d77 61%,#474e4b 100%)}
+.road:before{animation:roadMove .55s linear infinite}
+.tree,.billboard{animation:sceneryMove 7s linear infinite}
+.playercar{animation:carBounce .45s ease-in-out infinite alternate}
+.coin{cursor:pointer;animation:bob .7s ease-in-out infinite}
+.fuelbar{width:75px;height:7px;background:#ffffff77;border-radius:10px;overflow:hidden;margin-top:4px}
+.fuelbar span{display:block;width:100%;height:100%;background:#ffcf35;transition:width .4s}
+.fuelstation{display:none;position:absolute;z-index:4;top:43%;left:50%;transform:translate(-50%,-50%);background:#fff;border:4px solid #f5c34d;color:#155333;padding:12px 18px;border-radius:14px;text-align:center;font-weight:900;box-shadow:0 5px 20px #0004}
+.fuelstation.show{display:block;animation:popIn .45s ease-out}
+@keyframes roadMove{from{background-position-y:0}to{background-position-y:105px}}
+@keyframes sceneryMove{0%{filter:brightness(1)}50%{filter:brightness(1.1)}100%{filter:brightness(1)}}
+@keyframes carBounce{from{margin-bottom:0}to{margin-bottom:5px}}
+@keyframes popIn{from{opacity:0;transform:translate(-50%,-40%) scale(.8)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+#questionModal{display:none;position:fixed;z-index:20;inset:0;background:#08291dbb;align-items:center;justify-content:center;padding:18px}
+#questionModal.show{display:flex}
+.modalbox{width:min(540px,100%);background:#f8fff9;border-radius:24px;padding:20px;box-shadow:0 15px 60px #001c12aa;animation:popIn .3s ease-out}
+.modalbox h2{text-align:center}
+.modalbox .answers{margin-top:15px}
+.modalmeta{display:flex;justify-content:space-between;gap:8px;font-weight:800;background:#e3f9eb;padding:10px;border-radius:12px;font-size:13px}
+.avatar-bob{animation:carBounce .6s ease-in-out infinite alternate}
+ .sun{position:absolute;width:65px;height:65px;border-radius:50%;background:#fff3a2;top:70px;right:15%;box-shadow:0 0 55px #fff8ad}
+.mountain{position:absolute;left:-5%;right:-5%;top:105px;height:140px;background:#659b9a;clip-path:polygon(0 100%,12% 35%,21% 68%,37% 0,53% 72%,68% 18%,82% 67%,93% 29%,100% 100%);opacity:.95}
+.mountain.back{top:125px;background:#9fc6c1;transform:scaleX(-1);opacity:.8}
+.tree{position:absolute;top:160px;width:75px;height:140px;background:linear-gradient(90deg,#62482c 0 13%,transparent 13%),radial-gradient(ellipse at 50% 20%,#176b36 0 25%,#258847 26% 45%,transparent 46%);filter:drop-shadow(0 5px 4px #173b24aa)}
+.tree.left{left:1%}.tree.left2{left:14%;top:195px;transform:scale(.75)}
+.tree.right{right:0}.tree.right2{right:14%;top:190px;transform:scale(.8)}
+.billboard{position:absolute;top:175px;background:#f7fff7;border:5px solid #477b50;border-radius:6px;padding:8px 10px;font-size:12px;line-height:1.25;font-weight:900;color:#087244;box-shadow:0 4px 5px #173b2444}
+.billboard.left{left:2%;transform:rotate(-2deg)}
+.billboard.right{right:2%;top:205px;transform:rotate(2deg)}
+.road{position:absolute;bottom:-20px;left:16%;width:68%;height:72%;background:linear-gradient(90deg,#656c6a,#858b88 48%,#5d6562);clip-path:polygon(42% 0,58% 0,100% 100%,0 100%)}
+.road:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(to bottom,transparent 0 44px,#f7f4d9 45px 66px,transparent 67px 105px);clip-path:polygon(49% 0,51% 0,56% 100%,44% 100%)}
+.rail{position:absolute;bottom:0;width:15%;height:38%;background:repeating-linear-gradient(0deg,#e9e9e9 0 20px,#c94a3d 20px 40px);opacity:.85;transform:skewY(-10deg)}
+.rail.l{left:0}.rail.r{right:0;transform:skewY(10deg)}
+.coin{position:absolute;z-index:2;color:#ffcf20;text-shadow:0 2px 0 #b97700,0 0 10px #ffec73;font-size:30px;animation:bob 1.2s ease-in-out infinite}
+.c1{top:62%;left:49%}.c2{top:52%;left:44%;font-size:22px}
+.c3{top:48%;left:54%;font-size:23px}.c4{top:68%;left:58%;font-size:34px}
+.traffic{position:absolute;z-index:2;bottom:31%;width:48px;height:70px;border-radius:12px 12px 8px 8px;background:#df3c3c;box-shadow:inset 0 8px #f77b7b,0 7px 8px #2227;border:3px solid #eee}
+.traffic:before{content:"";position:absolute;top:10px;left:7px;right:7px;height:20px;background:#a9e1ef;border-radius:6px}
+.t1{left:39%;transform:scale(.7)}
+.t2{right:32%;bottom:37%;background:#2776d2;transform:scale(.58)}
+.playercar{position:absolute;z-index:3;bottom:7%;left:50%;transform:translateX(-50%);font-size:clamp(78px,16vw,130px);filter:drop-shadow(0 12px 7px #1118);line-height:1;transition:left .16s ease}
+.hint{position:absolute;bottom:20px;right:14px;color:white;background:#172d2d99;padding:10px 13px;border-radius:14px;font-size:12px;text-align:center}
+.controls{position:absolute;z-index:5;bottom:22px;left:18px;display:flex;gap:12px}
+.control{width:76px;height:76px;border-radius:50%;border:3px solid #ffffffd9;background:linear-gradient(#17a45e,#00683b);color:white;font-size:32px;font-weight:900;box-shadow:0 5px 10px #001d1055;cursor:pointer;touch-action:manipulation}
+.question{background:#fff;border-radius:22px;margin:14px;padding:14px 16px 16px;position:relative;z-index:6;box-shadow:0 5px 20px #073b2512}
+.qtop{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#e8fff0;border-radius:14px;padding:9px 12px;font-size:13px;font-weight:800}
+.timer{height:8px;width:100px;background:#ccebd7;border-radius:20px;overflow:hidden;display:inline-block;vertical-align:middle;margin:0 5px}
+.timer span{display:block;height:100%;width:100%;background:#20bd72;transition:width .3s}
+.question h3{text-align:center;font-size:clamp(27px,6vw,42px);margin:14px 0}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choice{padding:13px 15px;border-radius:17px;border:2px solid #c9ecd5;background:#fbfffc;color:#163d2e;font-weight:850;text-align:left;cursor:pointer}
+.choice.correct{background:#1ca45c;color:white;border-color:#078047}
+.choice.wrong{background:#ffe6e3;border-color:#ee7d70}
+.message{text-align:center;font-weight:800;min-height:25px;margin-top:10px}
+.bottomnav{display:flex;justify-content:center;gap:10px;padding:15px}
+.bottomnav button{border:1px solid var(--line);background:#fff;color:var(--green);border-radius:13px;padding:10px 14px;font-weight:800;cursor:pointer}
+.lessonbox{background:white;border:1px solid var(--line);border-radius:22px;padding:20px;line-height:1.65}
+.lessonbox h2{margin-top:0}
+footer{text-align:center;color:#648372;font-size:12px;padding:20px}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@media(max-width:700px){
+ .wrap{padding:12px}.games{grid-template-columns:1fr;gap:12px}
+ .gamecard{padding:14px}.emoji{width:70px;height:68px;font-size:40px}
+ .scene{height:390px}.hud{left:7px;right:7px;top:7px;gap:4px}
+ .huditem{padding:6px 8px;font-size:11px}.huditem strong{font-size:16px}
+ .progress{width:70px}.control{width:61px;height:61px;font-size:26px}
+ .controls{left:10px;bottom:16px;gap:8px}
+ .hint{right:8px;bottom:16px;font-size:10px;max-width:140px}
+ .question{margin:8px;padding:10px}.choice{padding:12px;font-size:14px}
+ .billboard{font-size:9px;padding:5px}.playercar{bottom:8%}
+ .top{padding:15px 14px}.stars{font-size:13px;padding:7px 10px}
+}
+@media(max-width:390px){
+ .brand{font-size:16px}.scene{height:350px}
+ .huditem:last-child{display:none}.answers{gap:7px}
+ .choice{padding:10px;font-size:13px}
+}
+</style>
+</head>
+<body>
+<header class="top">
+ <div class="topline">
+  <div class="brand"><span class="leaf">🌿</span>SO‘FI OLLOHYOR · BILMASVOY</div>
+  <div class="stars">⭐ <span id="starCount">12</span></div>
+ </div>
+ <div class="subtitle">Bilmasvoyni o‘rgat, yo‘lni och va bilimlar xazinasiga yetib bor!</div>
+</header>
+<main class="wrap">
+ <section class="games">
+    <article class="gamecard">
+   <div class="cardtop">
+    <div class="emoji">🧑🏻‍🎓</div>
+    <div><span class="tag">📚 BILIM VA SARGUZASHT</span><h2>Bilmasvoyga o‘rgat!</h2></div>
+   </div>
+   <p>Fan tanlang, savollarga javob bering va Bilmasvoy bilan bilimlar xaritasidan o‘ting.</p>
+   <button class="primary" onclick="showPanel('lesson')">O‘yinni boshlash 🚀</button>
+  </article>
+  <article class="gamecard race">
+   <div class="cardtop">
+    <div class="emoji">🏎️</div>
+    <div><span class="tag">🏁 MATEMATIK POYGA</span><h2>Bilimlar poygasi</h2></div>
+   </div>
+   <p>Mashinani boshqaring, matematik savollarni yeching va o‘yin ichida tangalar yig‘ing.</p>
+   <button class="secondary" onclick="showPanel('race')">Mashina o‘yini 🚘</button>
+  </article>
+ </section>
+ <div class="profile">
+  <input id="playerName" placeholder="O‘quvchi ismi" aria-label="O‘quvchi ismi">
+  <select id="subject" aria-label="Fan tanlang">
+   <option>Matematika</option><option>Fizika</option>
+   <option>Ingliz tili</option><option>Ona tili</option>
+  </select>
+ </div>
+ <section id="lesson" class="panel">
+  <div class="lessonbox">
+   <h2>📚 Bilmasvoyga o‘rgat!</h2>
+   <p>Bilmasvoyga yordam berish uchun savolni yeching.</p>
+   <h3 id="lessonQuestion">36 ÷ 4 + 6 = ?</h3>
+   <div class="answers" id="lessonAnswers"></div>
+   <div class="message" id="lessonMessage"></div>
+   <button class="primary" onclick="newLessonQuestion()">Keyingi savol ➜</button>
+  </div>
+ </section>
+ <section id="race" class="panel active">
+  <div class="racebox" id="racebox">
+   <div class="hud">
+    <div class="huditem">🛣️ Masofa<strong id="distance">320 m</strong></div>
+    <div class="huditem">Bosqich <strong id="stage">3/10</strong><div class="progress"><span id="progress"></span></div></div>
+    <div class="huditem">🪙 <strong id="coins">12</strong></div>
+    <div class="huditem">⛽ Yoqilg‘i<strong id="fuelText">100%</strong><div class="fuelbar"><span id="fuelFill"></span></div></div>
+    <div class="huditem">❤️ <strong id="lives">3</strong></div>
+   </div>
+   <div class="scene" id="scene">
+    <div class="sun"></div>
+    <div class="mountain back"></div><div class="mountain"></div>
+    <div class="tree left"></div><div class="tree left2"></div>
+    <div class="tree right"></div><div class="tree right2"></div>
+    <div class="billboard left">O‘QISH<br>SENING<br>KELAJAGING</div>
+    <div class="billboard right">📚 BILIM<br>— ENG KATTA<br>BOYLIK</div>
+    <div class="road"></div><div class="rail l"></div><div class="rail r"></div>
+    <div class="coin c1">🪙</div><div class="coin c2">⭐</div>
+    <div class="coin c3">⭐</div><div class="coin c4">🪙</div>
+    <div class="traffic t1"></div><div class="traffic t2"></div>
+    <div class="fuelstation" id="fuelstation">
+     ⛽ YOQILG‘I SHAHOBCHASI<br>
+     <small>3 ta savolga javob bering!</small>
+    </div>
+    <div class="playercar" id="car">🏎️</div>
+    <div class="controls">
+     <button class="control" id="leftBtn" aria-label="Chapga">←</button>
+     <button class="control" id="rightBtn" aria-label="O‘ngga">→</button>
+    </div>
+    <div class="hint">👆 Surib boshqaring<br>yoki tugmalardan foydalaning</div>
+   </div>
+   <div class="question" id="raceStatus">
+    <div class="qtop"><span>🏁 Poyga davom etmoqda</span><span>⛽ Yoqilg‘i tugashini kuting</span></div>
+    <h3 id="raceNotice">Yulduzchalarni yig‘ing! ⭐</h3>
+    <div class="message" id="message" aria-live="polite"></div>
+   </div>
+  </div>
+ </section>
+ <div class="bottomnav">
+  <button onclick="showPanel('race')">🏎️ Poyga</button>
+  <button onclick="showPanel('lesson')">📚 Bilmasvoy</button>
+  <button onclick="resetGame()">↻ Qayta boshlash</button>
+ </div>
+</main>
+<div id="questionModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+ <div class="modalbox">
+  <div class="modalmeta"><span id="questionCount">1 / 3-savol</span><span>⛽ Yoqilg‘i olish</span></div>
+  <h2 id="modalTitle">🧠 Matematik savol</h2>
+  <h3 id="questionText" style="text-align:center;font-size:30px">48 ÷ 6 + 7 = ?</h3>
+  <div class="answers" id="answers"></div>
+  <div class="message" id="modalMessage" aria-live="polite"></div>
+ </div>
+</div>
+<footer>So‘fi Ollohyor o‘quv markazi · Bilim bilan marraga!</footer>
+<script>
+ const questions=[
+ {q:"48 ÷ 6 + 7 = ?",a:["8","11","13","15"],correct:3},
+ {q:"9 × 7 − 13 = ?",a:["50","49","54","63"],correct:0},
+ {q:"(36 + 24) ÷ 6 = ?",a:["8","9","10","12"],correct:2},
+ {q:"5² + 6 = ?",a:["25","30","31","36"],correct:2},
+ {q:"144 ÷ 12 + 8 = ?",a:["18","20","22","24"],correct:1},
+ {q:"3/4 + 1/4 = ?",a:["1/2","1","3/8","2"],correct:1},
+ {q:"15 × 4 ÷ 6 = ?",a:["8","10","12","15"],correct:1},
+ {q:"100 − 8 × 7 = ?",a:["44","36","56","24"],correct:0},
+ {q:"2³ × 3 = ?",a:["12","18","24","36"],correct:2},
+ {q:"√81 + 6 = ?",a:["12","13","15","18"],correct:2}
+];
+
+const $=id=>document.getElementById(id);
+
+let qi=0,coins=12,lives=3,stage=3,distance=320,lane=0,lessonIndex=0;
+let fuel=100,fuelTimer=null,modalIndex=0,correctThisStop=0,answeredModal=false;
+let starsCaught=0;
+
+function showPanel(which){
+ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+ $(which).classList.add('active');
+
+ if(which==='race'){
+  startRace();
+ }else{
+  stopRace();
+ }
+
+ document.querySelector('.games').scrollIntoView({
+  behavior:'smooth',block:'start'
+ });
+}
+
+function startRace(){
+ if(fuelTimer || $('questionModal').classList.contains('show'))return;
+
+ fuelTimer=setInterval(()=>{
+  if(!$('race').classList.contains('active')){
+   stopRace();
+   return;
+  }
+
+  fuel=Math.max(0,fuel-2);
+  updateHud();
+
+  if(fuel<=0){
+   stopRace();
+   openFuelQuestions();
+  }
+ },1000);
+}
+
+function stopRace(){
+ if(fuelTimer){
+  clearInterval(fuelTimer);
+  fuelTimer=null;
+ }
+}
+
+function updateHud(){
+ $('coins').textContent=coins;
+ $('lives').textContent=lives;
+ $('stage').textContent=stage+'/10';
+ $('distance').textContent=distance+' m';
+ $('progress').style.width=(stage*10)+'%';
+ $('fuelText').textContent=fuel+'%';
+ $('fuelFill').style.width=fuel+'%';
+}
+
+function move(dir){
+ if(!$('race').classList.contains('active'))return;
+ if($('questionModal').classList.contains('show'))return;
+
+ lane=Math.max(-1,Math.min(1,lane+dir));
+ $('car').style.left=(50+lane*20)+'%';
+
+ distance+=1;
+ $('distance').textContent=distance+' m';
+
+ // Mashina harakatlanganda yulduz yig‘ish
+ if(Math.random()<0.45){
+  coins++;
+  starsCaught++;
+  $('starCount').textContent=Number($('starCount').textContent)+1;
+  $('coins').textContent=coins;
+ }
+}
+
+$('leftBtn').addEventListener('click',()=>move(-1));
+$('rightBtn').addEventListener('click',()=>move(1));
+
+let touchX=null;
+
+$('scene').addEventListener('touchstart',e=>{
+ touchX=e.touches[0].clientX;
+},{passive:true});
+
+$('scene').addEventListener('touchend',e=>{
+ if(touchX===null)return;
+
+ let dx=e.changedTouches[0].clientX-touchX;
+
+ if(Math.abs(dx)>25){
+  move(dx>0?1:-1);
+ }
+
+ touchX=null;
+},{passive:true});
+
+document.addEventListener('keydown',e=>{
+ if(e.key==='ArrowLeft')move(-1);
+ if(e.key==='ArrowRight')move(1);
+});
+
+function openFuelQuestions(){
+ $('fuelstation').classList.add('show');
+ $('raceNotice').textContent='⛽ Yoqilg‘i tugadi — savollarga javob bering!';
+
+ correctThisStop=0;
+ modalIndex=0;
+
+ setTimeout(()=>{
+  $('questionModal').classList.add('show');
+  renderModalQuestion();
+ },700);
+}
+
+function renderModalQuestion(){
+ const q=questions[(qi+modalIndex)%questions.length];
+
+ $('questionCount').textContent=(modalIndex+1)+' / 3-savol';
+ $('questionText').textContent=q.q;
+ $('answers').innerHTML='';
+ $('modalMessage').textContent='';
+
+ answeredModal=false;
+
+ q.a.forEach((v,i)=>{
+  const b=document.createElement('button');
+  b.className='choice';
+  b.textContent=String.fromCharCode(65+i)+') '+v;
+  b.onclick=()=>answerModal(i,q.correct,b);
+  $('answers').appendChild(b);
+ });
+}function answerModal(index,correct,btn){
+ if(answeredModal)return;
+
+ answeredModal=true;
+
+ [...$('answers').children].forEach((b,i)=>{
+  b.disabled=true;
+  if(i===correct)b.classList.add('correct');
+ });
+
+ if(index===correct){
+  correctThisStop++;
+  $('modalMessage').textContent='To‘g‘ri javob! ⭐';
+  $('modalMessage').style.color='#07834b';
+ }else{
+  $('modalMessage').textContent='Bu safar xato. Keyingi savolga o‘ting.';
+  $('modalMessage').style.color='#bd3b30';
+  btn.classList.add('wrong');
+ }
+
+ setTimeout(()=>{
+  modalIndex++;
+
+  if(modalIndex<3){
+   renderModalQuestion();
+  }else{
+   finishFuelStop();
+  }
+ },850);
+}
+
+function finishFuelStop(){
+ const reward=
+  correctThisStop===1?3:
+  correctThisStop===2?6:
+  correctThisStop===3?10:0;
+
+ distance+=reward;
+ stage=Math.min(10,stage+1);
+ fuel=100;
+
+ $('questionModal').classList.remove('show');
+ $('fuelstation').classList.remove('show');
+
+ $('raceNotice').textContent=
+  correctThisStop===0
+  ?'Bu safar yoqilg‘i bonusi yo‘q. Keyingi safar urinib ko‘ring!'
+  :'Ajoyib! '+correctThisStop+
+   ' ta to‘g‘ri javob — '+reward+' m oldinga! ⛽';
+
+ $('message').textContent='Yangi yo‘l boshlandi — yulduzchalarni yig‘ing!';
+
+ qi=(qi+3)%questions.length;
+ updateHud();
+ startRace();
+}
+
+function resetGame(){
+ stopRace();
+
+ qi=0;
+ coins=12;
+ lives=3;
+ stage=3;
+ distance=320;
+ lane=0;
+ fuel=100;
+ starsCaught=0;
+
+ $('car').style.left='50%';
+ $('starCount').textContent='12';
+ $('fuelstation').classList.remove('show');
+ $('questionModal').classList.remove('show');
+ $('raceNotice').textContent='Yulduzchalarni yig‘ing! ⭐';
+
+ updateHud();
+
+ if($('race').classList.contains('active')){
+  startRace();
+ }
+}
+
+function newLessonQuestion(){
+ lessonIndex++;
+ renderLesson();
+}
+
+function renderLesson(){
+ const qs=[
+  {q:'36 ÷ 4 + 6 = ?',a:['9','12','15','18'],c:2},
+  {q:'7 × 8 = ?',a:['54','56','64','48'],c:1},
+  {q:'25% of 80 = ?',a:['10','15','20','25'],c:2}
+ ];
+
+ const q=qs[lessonIndex%qs.length];
+
+ $('lessonQuestion').textContent=q.q;
+ $('lessonAnswers').innerHTML='';
+ $('lessonMessage').textContent='';
+
+ q.a.forEach((v,i)=>{
+  const b=document.createElement('button');
+  b.className='choice';
+  b.textContent=String.fromCharCode(65+i)+') '+v;
+
+  b.onclick=()=>{
+   [...$('lessonAnswers').children].forEach(x=>x.disabled=true);
+
+   if(i===q.c){
+    b.classList.add('correct');
+    $('lessonMessage').textContent='Barakalla! To‘g‘ri javob! ⭐';
+   }else{
+    $('lessonAnswers').children[q.c].classList.add('correct');
+    b.classList.add('wrong');
+    $('lessonMessage').textContent=
+     'Yaxshi urinish! To‘g‘ri javob yashil rangda.';
+   }
+  };
+
+  $('lessonAnswers').appendChild(b);
+ });
+}
+
+renderLesson();
+updateHud();
+</script>
+</body>
+</html>
+ 

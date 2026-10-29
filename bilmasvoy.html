@@ -1,0 +1,177 @@
+<!DOCTYPE html><html lang="uz"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>So‘fi Ollohyor — Bilmasvoy</title>
+<style>
+:root{--bg:#e8fbef;--card:#fff;--ink:#123c2c;--line:#c8efd6;--soft:#e3f9eb;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0b1d15;--card:#14301f;--ink:#e2f7ea;--line:#24503a;--soft:#1b3d2b}}
+:root[data-theme=dark]{--bg:#0b1d15;--card:#14301f;--ink:#e2f7ea;--line:#24503a;--soft:#1b3d2b}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink);overflow-x:hidden}
+.top{background:linear-gradient(110deg,#00683b,#1aa966,#00683b);background-size:200% 100%;animation:sh 8s linear infinite;color:#fff;padding:14px 16px;border-radius:0 0 26px 26px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+@keyframes sh{to{background-position:200% 0}}
+.brand{font-weight:900;font-size:clamp(15px,4.4vw,24px)}
+.stars{background:#fff2;border:1px solid #fff7;border-radius:30px;padding:8px 13px;font-weight:800;white-space:nowrap}
+.pop{animation:pop .4s}@keyframes pop{50%{transform:scale(1.3)}}
+.wrap{max-width:560px;margin:auto;padding:12px}
+.bar{display:flex;gap:8px;margin-bottom:10px}
+.bar input,.bar select{flex:1;min-width:0;border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--card);color:var(--ink);font:inherit}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.tabs button{border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:16px;padding:11px;font:inherit;font-weight:850;cursor:pointer;transition:.2s}
+.tabs button.on{background:linear-gradient(90deg,#087b45,#13a15b);color:#fff;border-color:transparent;transform:translateY(-2px);box-shadow:0 6px 14px #087b4544}
+.panel{display:none}.panel.on{display:block;animation:fi .35s}
+@keyframes fi{from{opacity:0;transform:translateY(8px)}}
+.hud{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:8px}
+.chip{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:5px 3px;text-align:center;font-size:11px;line-height:1.25}
+.chip b{display:block;font-size:14px}
+.mini{height:5px;background:var(--line);border-radius:9px;overflow:hidden;margin-top:2px}.mini i{display:block;height:100%;width:100%;background:#ffcf35}
+.stage{position:relative;border-radius:22px;overflow:hidden;box-shadow:0 10px 26px #003a1e33;background:#123}
+canvas{display:block;width:100%;height:auto;touch-action:none}
+.ctl{display:flex;gap:10px;margin-top:10px}
+.ctl button{flex:1;height:64px;border:0;border-radius:18px;background:linear-gradient(#17a45e,#00683b);color:#fff;font-size:30px;font-weight:900;cursor:pointer;box-shadow:0 5px 0 #004d2b;touch-action:manipulation}
+.ctl button:active{transform:translateY(4px);box-shadow:0 1px 0 #004d2b}
+.ov{display:none;position:absolute;inset:0;background:#06241acc;backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:14px;z-index:5}.ov.show{display:flex}
+.mb{width:100%;background:var(--card);border-radius:22px;padding:16px;text-align:center;animation:pi .35s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pi{from{opacity:0;transform:scale(.7)}}
+.mm{display:flex;justify-content:space-between;background:var(--soft);border-radius:12px;padding:8px 10px;font-size:12px;font-weight:800}
+.mb h3,.q h3{font-size:clamp(20px,5.5vw,28px);margin:14px 0}
+.ans{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ch{padding:13px 10px;border-radius:15px;border:2px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-weight:800;text-align:left;cursor:pointer;transition:.15s}
+.ch:active{transform:scale(.97)}
+.ch.ok{background:#1ca45c;color:#fff;border-color:#078047;animation:pop .4s}
+.ch.no{background:#ffe0dc;color:#7a1d14;border-color:#ee7d70;animation:sk .35s}
+@keyframes sk{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.msg{min-height:24px;margin-top:10px;font-weight:800}
+.big{font-size:56px;display:inline-block;animation:bob 1s ease-in-out infinite alternate}
+@keyframes bob{to{transform:translateY(-8px)}}
+.pri{border:0;border-radius:15px;padding:12px 20px;background:linear-gradient(90deg,#087b45,#13a15b);color:#fff;font:inherit;font-weight:850;cursor:pointer;margin-top:10px}
+.q{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;position:relative;overflow:hidden;text-align:center}
+.path{position:relative;display:flex;justify-content:space-between;align-items:center;margin:40px 4px 14px}
+.path:before{content:"";position:absolute;left:10px;right:10px;top:50%;height:6px;margin-top:-3px;background:var(--line);border-radius:9px}
+.nd{position:relative;width:24px;height:24px;border-radius:50%;background:var(--card);border:3px solid var(--line);display:grid;place-items:center;font-size:11px;font-weight:800;transition:.4s}
+.nd.d{background:#20bd72;border-color:#0a8a4e;color:#fff}
+#av{position:absolute;top:-38px;left:12px;font-size:34px;transform:translateX(-50%);transition:left .7s cubic-bezier(.3,1.5,.5,1)}
+#av span{display:inline-block;animation:bob 1s ease-in-out infinite alternate}
+#av.hop span{animation:hp .6s}@keyframes hp{40%{transform:translateY(-22px) rotate(-12deg)}}
+#av span.shake{animation:sk .5s}
+.bub{background:var(--soft);border-radius:16px;padding:10px 12px;font-weight:700;font-size:14px;margin-bottom:8px}
+.tm{height:8px;background:var(--line);border-radius:9px;overflow:hidden;margin:10px 0}.tm i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ffcf35,#20bd72)}
+.cf{position:absolute;pointer-events:none;font-size:22px;left:50%;top:50%;animation:fly .9s ease-out forwards}
+@keyframes fly{to{transform:translate(var(--dx),var(--dy)) rotate(360deg);opacity:0}}
+footer{text-align:center;opacity:.6;font-size:12px;padding:16px}
+</style><link rel="stylesheet" href="premium.css">
+</head><body>
+<header class="top"><div class="brand">🌿 SO‘FI OLLOHYOR · BILMASVOY</div><div class="stars" id="sc">⭐ <span id="stn">0</span></div></header>
+<main class="wrap">
+<div class="bar"><input id="nm" placeholder="O‘quvchi ismi" maxlength="20" aria-label="O‘quvchi ismi"><select id="sub" aria-label="Fan"><option value="m">Matematika</option><option value="f">Fizika</option><option value="e">Ingliz tili</option><option value="o">Ona tili</option></select></div>
+<div class="tabs"><button id="t1" class="on" onclick="tab(1)">🏎️ Bilimlar poygasi</button><button id="t2" onclick="tab(2)">🧠 Bilmasvoyga o‘rgat</button></div>
+<section id="p1" class="panel on">
+<div class="hud"><div class="chip">🛣️<b id="hd">0 m</b></div><div class="chip">🏁 Bosqich<b id="hs">1/10</b></div><div class="chip">🪙<b id="hc">0</b></div><div class="chip">⛽<b id="hf">100%</b><div class="mini"><i id="fb"></i></div></div><div class="chip">❤️<b id="hl">3</b></div></div>
+<div class="stage"><canvas id="cv" width="400" height="520"></canvas><div class="ov" id="ov"></div></div>
+<div class="ctl"><button id="bl" aria-label="Chapga">◀</button><button id="br" aria-label="O‘ngga">▶</button></div>
+<button class="pri" style="width:100%" onclick="reset()">↻ Qayta boshlash</button>
+</section>
+<section id="p2" class="panel"><div class="q" id="lq"></div></section>
+</main>
+<footer>So‘fi Ollohyor o‘quv markazi · Bilim bilan marraga!</footer>
+<script>
+const $=i=>document.getElementById(i),R=Math.random,sh=a=>a.map(v=>[R(),v]).sort((p,q)=>p[0]-q[0]).map(v=>v[1]);
+// Savol: [savol, TO‘G‘RI javob, xato1, xato2, xato3]
+const B={m:[["48 ÷ 6 + 7 = ?","15","13","11","8"],["9 × 7 − 13 = ?","50","54","63","49"],["(36 + 24) ÷ 6 = ?","10","9","8","12"],["5² + 6 = ?","31","30","36","25"],["2³ × 3 = ?","24","18","12","36"],["√81 + 6 = ?","15","12","13","18"],["3/4 + 1/4 = ?","1","1/2","3/8","2"],["Uchburchak ichki burchaklari yig‘indisi?","180°","90°","360°","270°"],["Tomonlari 5, 6, 7 sm uchburchak perimetri?","18 sm","17 sm","19 sm","21 sm"],["80 ning 25 foizi?","20","25","15","10"],["Kvadrat tomoni 7 sm. Yuzi?","49 sm²","28 sm²","14 sm²","42 sm²"],["x + 15 = 42. x = ?","27","57","37","26"],["−8 + 5 = ?","−3","3","−13","13"],["Aylana diametri 10 sm. Radiusi?","5 sm","20 sm","10 sm","2 sm"]],
+f:[["Tezlik formulasi?","v = s / t","v = s · t","v = t / s","v = s + t"],["Kuch birligi?","Nyuton","Joul","Vatt","Paskal"],["Suv normal bosimda necha °C da qaynaydi?","100 °C","90 °C","110 °C","0 °C"],["Yorug‘lik tezligi taxminan?","300 000 km/s","300 km/s","30 000 km/s","3 000 km/s"],["Energiya birligi?","Joul","Nyuton","Amper","Volt"],["Erkin tushish tezlanishi taxminan?","9,8 m/s²","1,6 m/s²","98 m/s²","3,7 m/s²"],["Tok kuchi birligi?","Amper","Volt","Om","Vatt"]],
+e:[["“Apple” o‘zbekchada?","Olma","Nok","Behi","Uzum"],["She ___ a student.","is","are","am","be"],["“Kitob” inglizchada?","Book","Pen","Desk","Bag"],["“Go” ning o‘tgan zamoni?","went","goed","gone","goes"],["I ___ breakfast every day.","eat","eats","eating","ate"],["“Eleven” qaysi son?","11","12","10","7"],["“Child” ning ko‘pligi?","children","childs","childrens","childes"]],
+o:[["“Katta” so‘zining antonimi?","Kichik","Baland","Keng","Uzun"],["Ot qaysi savolga javob beradi?","Kim? Nima?","Qanday?","Qancha?","Nima qildi?"],["“Maktab” so‘zida nechta bo‘g‘in bor?","2","1","3","4"],["Qaysi so‘z sifat?","go‘zal","kitob","yozdi","uch"],["“Bola kitob o‘qidi.” Ega qaysi?","Bola","Kitob","O‘qidi","Bola kitob"],["“Tez” so‘zining sinonimi?","Chaqqon","Sekin","Og‘ir","Past"],["O‘zbek lotin alifbosida nechta harf bor?","29","26","31","28"]]};
+const getQs=n=>sh(B[$('sub').value]).slice(0,n).map(r=>({q:r[0],c:r[1],a:sh(r.slice(1))}));
+function addStars(n){const e=$('stn');e.textContent=+e.textContent+n;const s=$('sc');s.classList.remove('pop');void s.offsetWidth;s.classList.add('pop')}
+function ask(box,q,cb){delete box.dataset.l;box.innerHTML='';q.a.forEach((t,i)=>{const b=document.createElement('button');b.className='ch';b.textContent='ABCD'[i]+') '+t;b.onclick=()=>{if(box.dataset.l)return;box.dataset.l=1;[...box.children].forEach(x=>{x.disabled=1;if(x.textContent.slice(3)===q.c)x.classList.add('ok')});if(t!==q.c)b.classList.add('no');cb(t===q.c)};box.appendChild(b)})}
+function burst(el,em,n){for(let i=0;i<n;i++){const s=document.createElement('span');s.className='cf';s.textContent=em[i%em.length];s.style.setProperty('--dx',(R()*260-130)+'px');s.style.setProperty('--dy',(-R()*180-20)+'px');el.appendChild(s);setTimeout(()=>s.remove(),950)}}
+function tab(n){for(const i of[1,2]){$('p'+i).classList.toggle('on',n==i);$('t'+i).classList.toggle('on',n==i)}if(n==2&&!L)learn()}
+$('sub').onchange=()=>{if(L)learn()};
+
+/* ===== 1. BILIMLAR POYGASI (canvas) ===== */
+const cv=$('cv'),x=cv.getContext('2d'),W=400,H=520,hy=190,cx=200,N=10;
+let st,fuel,lives,stage,dist,coins,off,lane,px,obs,pr,tm,shake,fl,qs,qn,good,last=0;
+const Y=q=>hy+(H-hy)*q*q,HW=q=>22+168*q*q;
+const P=(c,...p)=>{x.fillStyle=c;x.beginPath();x.moveTo(p[0],p[1]);for(let i=2;i<p.length;i+=2)x.lineTo(p[i],p[i+1]);x.fill()};
+const E=(a,b,rx,ry,c)=>{x.fillStyle=c;x.beginPath();x.ellipse(a,b,rx,ry,0,0,7);x.fill()};
+const rr=(a,b,w,h,r,c)=>{x.fillStyle=c;x.beginPath();x.roundRect(a,b,w,h,r);x.fill()};
+function reset(){st='run';fuel=100;lives=3;stage=1;dist=0;coins=0;off=0;lane=0;px=0;obs=[];pr=[];tm=1;shake=0;fl=0;$('ov').className='ov'}
+reset();
+function car(a,b,s,c,r){x.save();x.translate(a,b);x.rotate(r);x.scale(s,s);E(0,52,42,10,'#0006');
+ [[-38,-34],[26,-34],[-38,16],[26,16]].forEach(w=>rr(w[0],w[1],12,30,4,'#161616'));
+ rr(-30,-50,60,100,16,c);rr(-5,-50,10,100,4,'#ffffff40');rr(-22,-22,44,34,9,'#1b2838');rr(-18,-18,36,12,5,'#8fd3ee');
+ x.fillStyle='#111';x.fillRect(-32,36,64,6);x.fillStyle='#ffdd55';x.fillRect(-26,43,14,5);x.fillRect(12,43,14,5);x.restore()}
+function boom(a,b,c,n){for(let i=0;i<n;i++)pr.push({x:a,y:b,vx:(R()-.5)*300,vy:-R()*240-30,l:.7,c})}
+function upd(dt){
+ const sp=.42+.035*stage;off+=sp*N*dt;dist+=sp*dt*40;fuel-=4*dt;px+=(lane-px)*Math.min(1,dt*12);shake-=dt;fl=Math.max(0,fl-dt);
+ tm-=dt;if(tm<=0){tm=.5+R()*.45;const r=R();obs.push({q:.02,l:Math.floor(R()*3)-1,t:r<.3?0:r<.8?1:2,c:['#2776d2','#f4a62a','#8e44ad','#2aa7a0'][Math.floor(R()*4)]})}
+ const ax=cx+px*.62*HW(.9),ay=Y(.9);
+ obs.forEach(o=>{o.q+=sp*dt;if(!o.d&&o.q>.86&&o.q<.95&&o.l==lane){
+  if(o.t==0){if(fl<=0){o.d=1;lives--;shake=.4;fl=1.5;boom(ax,ay-30,'#ff5a4d',22)}}
+  else{o.d=1;coins+=o.t;addStars(o.t);boom(ax,ay-50,o.t==2?'#ffd23f':'#fff27a',14)}}});
+ obs=obs.filter(o=>o.q<1.12&&!(o.d&&o.t>0));
+ if(R()<.7)pr.push({x:ax+(R()-.5)*30,y:ay+8,vx:(R()-.5)*30,vy:100+R()*60,l:.25,c:'#ffb703'});
+ pr.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=500*dt;p.l-=dt});pr=pr.filter(p=>p.l>0);
+ if(lives<=0){st='end';over()}else if(fuel<=0){fuel=0;st='quiz';quiz()}}
+function hud(){$('hd').textContent=Math.floor(dist)+' m';$('hs').textContent=stage+'/10';$('hc').textContent=coins;$('hf').textContent=Math.ceil(fuel)+'%';$('fb').style.width=fuel+'%';$('hl').textContent=lives}
+function draw(t){x.save();if(shake>0)x.translate((R()-.5)*10,(R()-.5)*10);
+ let g=x.createLinearGradient(0,0,0,hy);g.addColorStop(0,'#4aa8f0');g.addColorStop(1,'#d8f3ff');x.fillStyle=g;x.fillRect(-10,-10,W+20,hy+12);
+ g=x.createRadialGradient(310,70,4,310,70,62);g.addColorStop(0,'#fffbd0');g.addColorStop(.35,'#ffe27a');g.addColorStop(1,'#ffe27a00');x.fillStyle=g;x.fillRect(240,0,140,140);
+ for(let i=0;i<3;i++){const a=((t/45+i*170)%520)-60,b=40+i*26;E(a,b,34,11,'#ffffffd0');E(a+18,b-8,22,10,'#ffffffd0')}
+ const mo=(c,o,pts)=>{x.fillStyle=c;x.beginPath();x.moveTo(-20,hy);pts.forEach(p=>x.lineTo(p[0]+o,p[1]));x.lineTo(W+20,hy);x.fill()};
+ mo('#8fbfb8',-px*6,[[40,110],[110,150],[190,95],[270,145],[350,105],[420,150]]);mo('#5f9a92',-px*12,[[-20,150],[60,125],[140,160],[230,120],[320,160],[400,130]]);
+ const f=off%1,fi=Math.floor(off);
+ for(let i=-1;i<N;i++){const a=Math.max(0,(i+f)/N),b=Math.min(1,(i+1+f)/N);if(b<=0)continue;
+  const ya=Y(a),yb=Y(b)+1,ha=HW(a),hb=HW(b),e=(i-fi)&1;
+  x.fillStyle=e?'#2f8f4a':'#3da85a';x.fillRect(0,ya,W,yb-ya);
+  P(e?'#5a6260':'#666e6b',cx-ha,ya,cx+ha,ya,cx+hb,yb,cx-hb,yb);
+  const k=e?'#e63946':'#fff';
+  P(k,cx-ha,ya,cx-ha*.93,ya,cx-hb*.93,yb,cx-hb,yb);P(k,cx+ha,ya,cx+ha*.93,ya,cx+hb*.93,yb,cx+hb,yb);
+  if(!e)for(const s of[-1,1]){const wa=.5+3.5*a*a,wb=.5+3.5*b*b,xa=cx+s*.31*ha,xb=cx+s*.31*hb;P('#f7f4d9',xa-wa,ya,xa+wa,ya,xb+wb,yb,xb-wb,yb)}
+  const q=(i+.5+f)/N;if(q>.05&&q<1){const p=q*q,s=.25+1.2*p,tx=cx+(e?-1:1)*(HW(q)+28*s+10*p),ty=Y(q);
+   x.fillStyle='#6b4a2b';x.fillRect(tx-4*s,ty-30*s,8*s,30*s);E(tx,ty-45*s,24*s,24*s,'#1f7a3d');E(tx-8*s,ty-52*s,16*s,16*s,'#2ea04f')}}
+ obs.sort((a,b)=>a.q-b.q).forEach(o=>{const p=o.q*o.q,s=.2+.8*p,ox=cx+o.l*.62*HW(o.q),oy=Y(o.q);
+  if(o.t==0)car(ox,oy-42*s,s*.85,o.c,0);
+  else{E(ox,oy,16*s,5*s,'#0004');x.font=Math.floor(40*s+8)+'px serif';x.textAlign='center';x.textBaseline='middle';x.shadowColor='#ffe066';x.shadowBlur=14;x.fillText(o.t==2?'🪙':'⭐',ox,oy-22*s-Math.sin(t/180+o.q*9)*4*s);x.shadowBlur=0}});
+ if(fl<=0||Math.floor(fl*12)%2)car(cx+px*.62*HW(.9),Y(.9)-44,.9,'#e63946',(lane-px)*.18);
+ pr.forEach(p=>{x.globalAlpha=Math.min(1,p.l*3);E(p.x,p.y,3,3,p.c)});x.globalAlpha=1;
+ if(fl>1.2){x.fillStyle='rgba(230,57,70,'+(fl-1.2)*1.2+')';x.fillRect(-10,-10,W+20,H+20)}
+ x.restore()}
+function loop(t){requestAnimationFrame(loop);if(!$('p1').classList.contains('on')){last=0;return}
+ const dt=Math.min(.05,(t-last)/1000||0);last=t;if(st=='run')upd(dt);hud();draw(t)}
+requestAnimationFrame(loop);
+function quiz(){qs=getQs(3);qn=0;good=0;nq()}
+function nq(){const o=$('ov'),q=qs[qn];o.className='ov show';o.innerHTML='<div class="mb"><div class="mm"><span>'+(qn+1)+' / 3-savol</span><span>⛽ Yoqilg‘i olish</span></div><h3>'+q.q+'</h3><div class="ans" id="ra"></div><div class="msg" id="rm"></div></div>';
+ ask($('ra'),q,k=>{const m=$('rm');if(k){good++;m.textContent='To‘g‘ri! ⭐';m.style.color='#1ca45c'}else{m.textContent='Xato. To‘g‘ri javob: '+q.c;m.style.color='#d1493b'}setTimeout(()=>{qn++;qn<3?nq():fill()},1100)})}
+function fill(){const rw=[0,3,6,10][good];dist+=rw;stage++;if(stage>10)return win();fuel=100;
+ $('ov').innerHTML='<div class="mb"><div class="big">⛽</div><h3>Yoqilg‘i to‘ldi!</h3><p>'+good+' ta to‘g‘ri javob — +'+rw+' m bonus</p><button class="pri" onclick="go()">Davom etish ▶</button></div>';burst($('ov'),['⭐','✨'],good*4)}
+function go(){$('ov').className='ov';st='run';obs=[]}
+function win(){st='end';addStars(10);$('ov').innerHTML='<div class="mb"><div class="big">🏆</div><h3>Marraga yetdingiz!</h3><p>'+Math.floor(dist)+' m · '+coins+' 🪙 · +10 ⭐</p><button class="pri" onclick="reset()">Qayta o‘ynash ↻</button></div>';burst($('ov'),['🎉','⭐','🏆','✨'],24)}
+function over(){$('ov').innerHTML='<div class="mb"><div class="big">💥</div><h3>Mashina buzildi!</h3><p>'+Math.floor(dist)+' m · '+stage+'-bosqich</p><button class="pri" onclick="reset()">Qayta urinish ↻</button></div>';$('ov').className='ov show'}
+const mv=d=>{if(st=='run')lane=Math.max(-1,Math.min(1,lane+d))};
+$('bl').onpointerdown=()=>mv(-1);$('br').onpointerdown=()=>mv(1);
+addEventListener('keydown',e=>{if(e.key=='ArrowLeft')mv(-1);if(e.key=='ArrowRight')mv(1)});
+let tx=null;cv.addEventListener('touchstart',e=>{tx=e.touches[0].clientX},{passive:true});
+cv.addEventListener('touchend',e=>{if(tx==null)return;const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>25)mv(d>0?1:-1);tx=null},{passive:true});
+cv.onclick=e=>{const r=cv.getBoundingClientRect();mv(e.clientX<r.left+r.width/2?-1:1)};
+
+/* ===== 2. BILMASVOYGA O‘RGAT ===== */
+let L=null;
+function learn(){L={qs:getQs(10),i:0,ok:0,s:0};let h='';for(let i=0;i<=10;i++)h+='<div class="nd'+(i?'':' d')+'" id="n'+i+'">'+(i==0?'🚩':i==10?'🏆':i)+'</div>';
+ $('lq').innerHTML='<div class="path">'+h+'<div id="av"><span id="avi">🤔</span></div></div><div class="bub" id="bb">Salom! Men Bilmasvoyman. To‘g‘ri javob bersang, bir qadam oldinga yuraman! 🚶</div><div class="mm"><span id="lc"></span><span id="ls"></span></div><div class="tm"><i id="tb"></i></div><h3 id="lt"></h3><div class="ans" id="la"></div>';sq()}
+function sq(){if(L.i>=10)return fin();const q=L.qs[L.i],tb=$('tb');$('lc').textContent=(L.i+1)+' / 10-savol';$('ls').textContent='🔥 Seriya: '+L.s;$('lt').textContent=q.q;
+ tb.style.transition='none';tb.style.width='100%';void tb.offsetWidth;tb.style.transition='width 20s linear';tb.style.width='0';
+ L.lock=0;clearTimeout(L.tt);L.tt=setTimeout(()=>{if(!L.lock){L.lock=1;res(false,q,1)}},20000);
+ ask($('la'),q,k=>{L.lock=1;clearTimeout(L.tt);res(k,q)})}
+function res(k,q,to){const bb=$('bb'),av=$('avi'),tb=$('tb'),w=getComputedStyle(tb).width;tb.style.transition='none';tb.style.width=w;
+ if(to)[...$('la').children].forEach(b=>{b.disabled=1;if(b.textContent.slice(3)===q.c)b.classList.add('ok')});
+ if(k){L.ok++;L.s++;const m=['Rahmat! Endi bilaman! 🤓','Zo‘r, tushundim! 🎯','Barakalla! 👏','Ajoyib, yana qadam! 🚀'];
+  bb.textContent=L.s>=3?'🔥 '+L.s+' ta ketma-ket! Sen daho ekansan!':m[L.i%4];av.textContent='🤓';addStars(1);burst($('lq'),['⭐','✨','🎉'],10);
+  const a=$('av');a.classList.remove('hop');void a.offsetWidth;a.classList.add('hop');a.style.left='calc(12px + (100% - 24px) * '+L.ok/10+')';for(let i=0;i<=L.ok;i++)$('n'+i).classList.add('d')}
+ else{L.s=0;bb.textContent=(to?'⏰ Vaqt tugadi. ':'Hmm, tushunmadim 😵 ')+'To‘g‘ri javob: '+q.c+' — eslab qolaman!';av.textContent='😵';av.classList.remove('shake');void av.offsetWidth;av.classList.add('shake')}
+ $('ls').textContent='🔥 Seriya: '+L.s;L.i++;setTimeout(()=>{if(L&&$('avi')){$('avi').textContent='🤔';sq()}},1800)}
+function fin(){const s=L.ok>=9?3:L.ok>=6?2:L.ok>=3?1:0,n=$('nm').value.trim();
+ $('lq').innerHTML='<div class="big">'+(s?'🎓':'📚')+'</div><h3 id="fh"></h3><p>'+L.ok+' / 10 to‘g‘ri javob</p><div style="font-size:38px">'+'⭐'.repeat(s)+'☆'.repeat(3-s)+'</div><button class="pri" onclick="learn()">Yana o‘ynash 🔁</button>';
+ $('fh').textContent=(s>=2?'Barakalla':'Yaxshi urinish')+(n?', '+n:'')+'!';burst($('lq'),['🎉','⭐','✨'],s*8+4);if(s==3)addStars(5)}
+</script><script src="fx.js" defer></script>
+</body></html>

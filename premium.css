@@ -1,0 +1,55 @@
+/* PREMIUM qatlam: style.css ustiga qo'shiladi */
+:root{--g2:#00ffc6;--ease:cubic-bezier(.2,.8,.2,1)}
+body{background-attachment:fixed}
+#fx{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.55}
+main,.footer,.topbar{position:relative;z-index:1}
+#bar{position:fixed;top:0;left:0;height:3px;width:0;z-index:99;background:linear-gradient(90deg,var(--green),var(--g2),#5e9bff);box-shadow:0 0 12px var(--green)}
+#glow{position:fixed;width:420px;height:420px;margin:-210px;border-radius:50%;pointer-events:none;z-index:0;background:radial-gradient(#00ff9122,transparent 65%);transition:transform .12s linear}
+.topbar{backdrop-filter:blur(16px) saturate(1.4);background:#02090ecc!important;transition:.35s var(--ease)}
+.topbar.sc{box-shadow:0 8px 30px #000a,0 1px 0 var(--line)}
+.brand-image,.hero-logo img{animation:fl 5s ease-in-out infinite;filter:drop-shadow(0 0 18px #00ff9177)}
+@keyframes fl{50%{transform:translateY(-8px)}}
+h1{background:linear-gradient(100deg,#fff,var(--mint),var(--green),#fff);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sh 7s linear infinite}
+h1 .green{-webkit-text-fill-color:transparent}
+@keyframes sh{to{background-position:-250% 0}}
+.green{text-shadow:0 0 22px #00ff9166}
+.hero{animation:up .9s var(--ease) both}
+.orb{animation:orb 9s ease-in-out infinite}.orb-two{animation-delay:-4s;animation-direction:reverse}
+@keyframes orb{50%{transform:translate(18px,-26px) scale(1.15)}}
+@keyframes up{from{opacity:0;transform:translateY(30px)}}
+.btn{position:relative;overflow:hidden;transition:transform .25s var(--ease),box-shadow .25s;box-shadow:0 6px 22px #00f59b44}
+.btn:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 12px 34px #00f59b77}
+.btn:active{transform:scale(.96)}
+.btn::after{content:"";position:absolute;top:0;left:-70%;width:45%;height:100%;background:linear-gradient(105deg,transparent,#fff7,transparent);transform:skewX(-20deg);animation:gl 3.4s infinite}
+@keyframes gl{60%,100%{left:140%}}
+.rp{position:absolute;border-radius:50%;background:#fff6;transform:scale(0);animation:rp .6s ease-out forwards;pointer-events:none}
+@keyframes rp{to{transform:scale(3);opacity:0}}
+.card,.stat,.subject,.panel,.teacher-card,.shop-card,.competition-card,.contact-item,.result-row,.daily-card{transition:transform .35s var(--ease),box-shadow .35s,border-color .35s;will-change:transform}
+.card:hover,.stat:hover,.subject:hover,.teacher-card:hover,.shop-card:hover,.competition-card:hover,.contact-item:hover{border-color:var(--green);box-shadow:0 14px 40px #00ff9124,inset 0 0 30px #00ff9112;transform:translateY(-6px)}
+.result-row:hover{transform:translateX(6px);border-color:var(--green)}
+.card-visual,.stat .emoji,.subject .emoji{display:inline-block;transition:.4s var(--ease)}
+.card:hover .card-visual,.stat:hover .emoji,.subject:hover .emoji{transform:scale(1.25) rotate(-8deg)}
+.stat strong{background:linear-gradient(90deg,var(--green),var(--g2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.rv{opacity:0;transform:translateY(34px) scale(.97);transition:opacity .8s var(--ease),transform .8s var(--ease);transition-delay:var(--d,0s)}
+.rv.in{opacity:1;transform:none}
+.section-kicker,.eyebrow,.tag{letter-spacing:.14em}
+.eyebrow{animation:pu 2.6s ease-in-out infinite}
+@keyframes pu{50%{box-shadow:0 0 22px #00ff9166}}
+.navitem{transition:.3s var(--ease)}
+.navitem.active{transform:translateY(-6px);text-shadow:0 0 14px var(--green)}
+.navitem:hover .navicon{transform:translateY(-4px) scale(1.2)}
+.navicon{display:inline-block;transition:.3s var(--ease)}
+.bottom-nav{backdrop-filter:blur(18px)}
+input,select,textarea{transition:.25s}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--green)!important;box-shadow:0 0 0 4px #00f59b2e,0 0 24px #00f59b33}
+.daily-card{background-image:linear-gradient(135deg,#00ff911a,transparent 55%)}
+.ranking-table tr{transition:.25s}.ranking-table tbody tr:hover{background:#00ff9114}
+.pf{animation:pf .9s var(--ease) both}
+@keyframes pf{from{opacity:0;transform:scale(.7)}}
+.star-b{position:fixed;pointer-events:none;z-index:98;font-size:22px;animation:sb 1s ease-out forwards}
+@keyframes sb{to{transform:translate(var(--x),var(--y)) rotate(300deg);opacity:0}}
+body{animation:pg .5s ease both}@keyframes pg{from{opacity:0}}
+body.out{opacity:0;transition:opacity .25s}
+::-webkit-scrollbar{width:9px}::-webkit-scrollbar-thumb{background:linear-gradient(var(--green),#008f5b);border-radius:9px}
+@media(max-width:700px){#glow{display:none}.card:hover,.stat:hover,.subject:hover{transform:none}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}#fx,#glow{display:none}}

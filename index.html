@@ -1,0 +1,424 @@
+
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#020b09">
+  <meta name="description" content="So‘fi Ollohyor o‘quv markazi — Oltinsoy tumani">
+  <title>Bosh sahifa | So‘fi Ollohyor</title>
+  <link rel="stylesheet" href="style.css?v=3">
+
+  <style>
+    .bilmasvoy-section{margin:28px 0}
+    .bilmasvoy-panel{
+      position:relative;display:flex;align-items:center;
+      justify-content:space-between;gap:22px;overflow:hidden;
+      padding:clamp(20px,4vw,34px);
+      border:1px solid #b8e9c6;border-radius:26px;
+      background:linear-gradient(130deg,#f4fff4,#dcf8e2 56%,#c7f0d0);
+      box-shadow:0 12px 34px #14763b14
+    }
+    .bilmasvoy-content{position:relative;z-index:1;max-width:610px}
+    .bilmasvoy-content h2{margin:13px 0 9px;line-height:1.15}
+    .bilmasvoy-content p{line-height:1.75;margin:0 0 14px}
+    .bilmasvoy-benefits{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 20px}
+    .bilmasvoy-benefits span{
+      padding:8px 11px;border:1px solid #ccebd2;border-radius:999px;
+      background:#ffffffc9;color:#176b3b;font-size:13px;font-weight:800
+    }
+    .bilmasvoy-cta{display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+    .bilmasvoy-hero-art{position:relative;z-index:1;flex:0 0 175px;display:grid;place-items:center;min-height:170px}
+    .bilmasvoy-orbit{
+      position:absolute;width:150px;height:150px;border:2px dashed #72c98a;
+      border-radius:50%;animation:bilmasvoyOrbit 18s linear infinite
+    }
+    .bilmasvoy-boy{
+      font-size:clamp(68px,10vw,104px);
+      filter:drop-shadow(0 9px 3px #1e75402b);
+      animation:bilmasvoyBounce 2.2s ease-in-out infinite
+    }
+    .bilmasvoy-float{position:absolute;font-size:27px;animation:bilmasvoyFloat 2.5s ease-in-out infinite}
+    .bilmasvoy-float.star{right:0;top:12px}
+    .bilmasvoy-float.book{left:0;bottom:15px;animation-delay:.5s}
+    .bilmasvoy-float.spark{right:2px;bottom:20px;animation-delay:1s}
+    @keyframes bilmasvoyBounce{
+      0%,100%{transform:translateY(0) rotate(-3deg)}
+      50%{transform:translateY(-11px) rotate(3deg)}
+    }
+    @keyframes bilmasvoyFloat{
+      0%,100%{transform:translateY(0) rotate(-8deg)}
+      50%{transform:translateY(-8px) rotate(8deg)}
+    }
+    @keyframes bilmasvoyOrbit{to{transform:rotate(360deg)}}
+    @media(max-width:620px){
+      .bilmasvoy-panel{gap:6px;padding:19px}
+      .bilmasvoy-hero-art{flex-basis:88px;min-height:120px}
+      .bilmasvoy-orbit{width:92px;height:92px}
+      .bilmasvoy-boy{font-size:62px}
+      .bilmasvoy-float{font-size:20px}
+      .bilmasvoy-content p{font-size:.94rem}
+      .bilmasvoy-benefits span{font-size:11px;padding:7px 9px}
+    }
+    @media(prefers-reduced-motion:reduce){
+      .bilmasvoy-boy,.bilmasvoy-orbit,.bilmasvoy-float{animation:none!important}
+    }
+  </style>
+<link rel="stylesheet" href="premium.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topinner">
+    <a class="brand" href="index.html">
+      <img class="brand-image"
+           src="assets/markaz-logo.png"
+           alt="Markaz logotipi"
+           onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+      <span class="brand-mark" hidden>SO</span>
+      <span class="brand-name">
+        SO‘FI OLLOHYOR
+        <small>O‘QUV MARKAZI</small>
+      </span>
+    </a>
+
+    <div class="social">
+      <a href="https://t.me/sufi_ollohyor_uquv_markaz"
+         target="_blank" rel="noopener noreferrer">✈️ Telegram</a>
+      <a href="https://www.instagram.com/sufiollohyor/"
+         target="_blank" rel="noopener noreferrer">📸 Instagram</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="hero">
+    <div class="hero-copy">
+      <span class="eyebrow">📍 Oltinsoy tumani</span>
+      <h1>So‘fi <span class="green">Ollohyor</span></h1>
+      <h2 class="hero-subtitle">O‘QUV MARKAZI</h2>
+      <p class="lead">Bilim · Tarbiya · Natija</p>
+      <p>
+        Matematika, fizika, ingliz tili va ona tili
+        fanlari bo‘yicha sifatli ta’lim va yangi imkoniyatlar.
+      </p>
+
+      <div class="hero-actions">
+        <a class="btn" href="about.html">Markaz haqida →</a>
+        <a class="btn secondary"
+           href="https://t.me/sufi_ollohyor_uquv_markaz"
+           target="_blank" rel="noopener noreferrer">✈️ Telegram</a>
+      </div>
+    </div>
+
+    <div class="hero-art">
+      <div class="hero-logo">
+        <img src="assets/markaz-logo.png"
+             alt="So‘fi Ollohyor logotipi"
+             onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+        <div class="hero-logo-fallback" hidden>
+          SO‘FI<br><span>OLLOHYOR</span>
+        </div>
+        <div class="sub">BILIM · TARBIYA · NATIJA</div>
+      </div>
+      <span class="orb orb-one"></span>
+      <span class="orb orb-two"></span>
+    </div>
+  </section>
+
+  <section class="stats" aria-label="Markaz statistikasi">
+    <div class="stat">
+      <span class="emoji">👥</span>
+      <div><strong>60</strong><span>nafar o‘quvchi</span></div>
+    </div>
+    <div class="stat">
+      <span class="emoji">🎓</span>
+      <div><strong>2</strong><span>5- va 6-sinflar</span></div>
+    </div>
+    <div class="stat">
+      <span class="emoji">🧑‍🏫</span>
+      <div><strong>5</strong><span>nafar ustoz</span></div>
+    </div>
+    <div class="stat">
+      <span class="emoji">📍</span>
+      <div><strong>Oltinsoy</strong><span>tumani</span></div>
+    </div>
+  </section>
+
+  <section class="content-section">
+    <div class="section-head">
+      <div>
+        <span class="section-kicker">TA’LIM YO‘NALISHLARI</span>
+        <h2>🟢 Bizning fanlar</h2>
+        <p>Bilim sari birgalikda intilamiz</p>
+      </div>
+    </div>
+    <section class="subjects" id="homeSubjects"></section>
+  </section>
+
+  <a class="panel math-panel"
+     href="https://t.me/matematika144"
+     target="_blank" rel="noopener noreferrer">
+    <div>
+      <span class="tag">MAXSUS GURUH</span>
+      <h2><span class="green">Matematika 144</span> guruhi</h2>
+      <p class="muted">Matematika bilan kuchli natijalarga!</p>
+    </div>
+    <span class="btn">Guruhga o‘tish →</span>
+  </a>
+
+  <!-- BILMASVOYGA O‘RGAT O‘YINI -->
+  <section class="content-section bilmasvoy-section" id="bilmasvoySection">
+    <div class="bilmasvoy-panel">
+      <div class="bilmasvoy-content">
+        <span class="tag">🎮 INTERAKTIV TA’LIM O‘YINI</span>
+        <h2>🧢 Bilmasvoyga <span class="green">o‘rgat!</span></h2>
+        <p>
+          Do‘ppi kiygan sho‘x Bilmasvoyga bilim o‘rgating!
+          Uning xatolarini toping, savollarni yeching,
+          yulduzlar to‘plang va bilimlar shahriga sayohat qiling.
+        </p>
+        <div class="bilmasvoy-benefits">
+          <span>⭐ Yulduzlar</span>
+          <span>🗺️ Sarguzasht xaritasi</span>
+          <span>🏆 Nishonlar</span>
+        </div>
+        <a class="btn bilmasvoy-cta" href="bilmasvoy.html">
+          Sarguzashtni boshlash 🚀
+        </a>
+      </div>
+
+      <div class="bilmasvoy-hero-art" aria-hidden="true">
+        <div class="bilmasvoy-orbit"></div>
+        <span class="bilmasvoy-boy">🧒🏻</span>
+        <span class="bilmasvoy-float star">⭐</span>
+        <span class="bilmasvoy-float book">📚</span>
+        <span class="bilmasvoy-float spark">✨</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- KUNLIK SAVOL -->
+  <section class="daily-question" id="dailyQuestionSection">
+    <span class="eyebrow">🧠 BILIMINGIZNI SINANG</span>
+    <h2>Kunlik <span class="green">savol</span></h2>
+    <p class="daily-muted">
+      To‘g‘ri javob bering va bugungi g‘olib bo‘lish
+      imkoniyatini qo‘lga kiriting.
+    </p>
+
+    <div class="daily-card">
+      <div class="question-label">BUGUNGI TOPSHIRIQ</div>
+      <h3 id="dailyQuestionText">Savol yuklanmoqda...</h3>
+      <label class="visually-hidden" for="dailyAnswerInput">Javobingiz</label>
+      <input id="dailyAnswerInput" type="text"
+             placeholder="Javobingizni yozing..." autocomplete="off">
+      <button type="button" class="btn" id="dailyCheck">Javobni tekshirish</button>
+      <div id="dailyFeedback" class="daily-feedback" aria-live="polite"></div>
+      <div id="dailyStudentBox"></div>
+      <div id="dailyWinner" class="daily-winner" aria-live="polite"></div>
+    </div>
+
+    <p class="daily-note">
+      Eslatma: g‘olib ushbu brauzerda saqlanadi.
+      Boshqa telefonlarga avtomatik sinxronlanmaydi.
+    </p>
+  </section>
+
+  <section class="content-section">
+    <div class="section-head">
+      <div>
+        <span class="section-kicker">MARKAZ IMKONIYATLARI</span>
+        <h2>Asosiy bo‘limlar</h2>
+        <p>Kerakli ma’lumotni tanlang</p>
+      </div>
+    </div>
+    <section class="feature-grid" id="homeFeatures"></section>
+  </section>
+
+  <section class="panel ranking-panel">
+    <div class="section-head">
+      <div>
+        <span class="section-kicker">FAOLLAR</span>
+        <h2>⭐ O‘quvchilar reytingi</h2>
+        <p>O‘quvchilarning natijalari</p>
+      </div>
+      <a class="text-link" href="ranking.html">Barchasi →</a>
+    </div>
+    <div id="rankPreview"></div>
+  </section>
+
+  <section class="panel news-panel">
+    <div class="section-head">
+      <div>
+        <span class="section-kicker">YANGILIKLAR</span>
+        <h2>📢 Markaz yangiliklari</h2>
+        <p>Rasmiy kanallarimizdan kuzatib boring</p>
+      </div>
+    </div>
+    <p class="muted">
+      E’lonlar, dars jadvalidagi o‘zgarishlar va markaz
+      yangiliklari Telegram kanalida joylanadi.
+    </p>
+    <div class="hero-actions">
+      <a class="btn" href="https://t.me/sufi_ollohyor_uquv_markaz"
+         target="_blank" rel="noopener noreferrer">Telegram kanaliga o‘tish ↗</a>
+      <a class="btn secondary" href="https://www.instagram.com/sufiollohyor/"
+         target="_blank" rel="noopener noreferrer">Instagram ↗</a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer wrap">
+  <div class="footer-brand">
+    SO‘FI OLLOHYOR
+    <span>O‘QUV MARKAZI</span>
+  </div>
+  <p>© 2026 So‘fi Ollohyor o‘quv markazi · Oltinsoy tumani</p>
+  <p class="smallprint">Bilim · Tarbiya · Natija</p>
+</footer>
+
+<nav class="bottom-nav" id="bottomNav" aria-label="Asosiy menyu"></nav>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+
+<script>
+(function () {
+  "use strict";
+
+  const q = window.DAILY_QUESTION;
+  const data = window.CENTER_DATA || {};
+  const text = document.getElementById("dailyQuestionText");
+  const input = document.getElementById("dailyAnswerInput");
+  const check = document.getElementById("dailyCheck");
+  const feedback = document.getElementById("dailyFeedback");
+  const studentBox = document.getElementById("dailyStudentBox");
+  const winnerBox = document.getElementById("dailyWinner");
+
+  if (!text || !input || !check || !feedback || !studentBox || !winnerBox) return;
+
+  if (!q || !q.text || q.answer == null || String(q.answer).trim() === "") {
+    text.textContent = "Hozircha savol joylashtirilmagan.";
+    check.disabled = true;
+    input.disabled = true;
+    return;
+  }
+
+  text.textContent = q.text;
+
+  const winnerKey = "sofi_daily_winner_v1";
+  const questionKey = "sofi_daily_question_v1";
+  const currentQuestion = String(q.text).trim() + "|" + String(q.answer).trim();
+
+  function normalize(value) {
+    return String(value == null ? "" : value)
+      .trim()
+      .toLocaleLowerCase("uz-UZ")
+      .replace(/[‘’ʻ`´']/g, "")
+      .replace(/\s+/g, " ");
+  }
+
+  function studentName(student) {
+    if (typeof student === "string") return student;
+    return student && (student.name || student.full_name || student.fullName)
+      || "O‘quvchi";
+  }
+
+  function showWinner(name) {
+    winnerBox.textContent = "🏆 Bugungi g‘olib — " + name + " 🎉";
+  }
+
+  try {
+    if (localStorage.getItem(questionKey) !== currentQuestion) {
+      localStorage.setItem(questionKey, currentQuestion);
+      localStorage.removeItem(winnerKey);
+    }
+
+    const saved = JSON.parse(localStorage.getItem(winnerKey) || "null");
+
+    if (saved && saved.name && saved.question === currentQuestion) {
+      showWinner(saved.name);
+      feedback.textContent = "Bugungi g‘olib ushbu brauzerda qayd etilgan.";
+      input.disabled = true;
+      check.disabled = true;
+    }
+  } catch (e) {}
+
+  check.addEventListener("click", function () {
+    if (check.disabled) return;
+
+    if (normalize(input.value) !== normalize(q.answer)) {
+      feedback.textContent = "❌ Javob noto‘g‘ri. Qayta urinib ko‘ring.";
+      studentBox.replaceChildren();
+      return;
+    }
+
+    const students = Array.isArray(data.students) ? data.students : [];
+
+    if (!students.length) {
+      feedback.textContent = "O‘quvchilar ro‘yxati topilmadi. data.js faylini tekshiring.";
+      return;
+    }
+
+    feedback.textContent = "✅ Javob to‘g‘ri! Ro‘yxatdan ismingizni tanlang.";
+    studentBox.replaceChildren();
+
+    const select = document.createElement("select");
+    select.className = "daily-student-select";
+    select.setAttribute("aria-label", "O‘quvchini tanlang");
+
+    const first = document.createElement("option");
+    first.value = "";
+    first.textContent = "O‘quvchini tanlang...";
+    select.appendChild(first);
+
+    students.forEach(function (student, index) {
+      const option = document.createElement("option");
+      option.value = String(index);
+      option.textContent = studentName(student);
+      select.appendChild(option);
+    });
+
+    const confirm = document.createElement("button");
+    confirm.type = "button";
+    confirm.className = "btn";
+    confirm.textContent = "Ismimni tasdiqlash";
+
+    studentBox.append(select, confirm);
+
+    confirm.addEventListener("click", function () {
+      if (select.value === "") {
+        feedback.textContent = "Avval ismingizni tanlang.";
+        return;
+      }
+
+      const name = studentName(students[Number(select.value)]);
+
+      try {
+        localStorage.setItem(
+          winnerKey,
+          JSON.stringify({ name: name, question: currentQuestion })
+        );
+      } catch (e) {}
+
+      showWinner(name);
+      feedback.textContent = "🎉 G‘olib e’lon qilindi!";
+      input.disabled = true;
+      check.disabled = true;
+      select.disabled = true;
+      confirm.disabled = true;
+    });
+  });
+
+  input.addEventListener("keydown", function (event) {
+    if (event.key === "Enter" && !check.disabled) check.click();
+  });
+})();
+</script>
+
+<script src="fx.js" defer></script>
+</body>
+</html>

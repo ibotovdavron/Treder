@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#020b09">
+  <meta name="description" content="So‘fi Ollohyor o‘quv markazi — bilim do‘koni">
+  <title>Bilim do‘koni | So‘fi Ollohyor</title>
+  <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="premium.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topinner">
+    <a class="brand" href="index.html">
+      <img src="assets/markaz-logo.png"
+           alt="So‘fi Ollohyor logotipi"
+           onerror="this.style.display='none'">
+      <span class="brand-mark">S<span class="green">O</span></span>
+      <span class="brand-name">
+        SO‘FI OLLOHYOR
+        <small>O‘QUV MARKAZI</small>
+      </span>
+    </a>
+
+    <div class="social">
+      <a data-telegram
+         href="https://t.me/sufi_ollohyor_uquv_markaz"
+         target="_blank" rel="noopener noreferrer">✈️ Telegram</a>
+      <a data-instagram
+         href="https://www.instagram.com/sufiollohyor/"
+         target="_blank" rel="noopener noreferrer">📸 Instagram</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="pagehead">
+    <span class="eyebrow">🛍️ O‘quv qurollari</span>
+    <h1>Bilim <span class="green">do‘koni</span></h1>
+    <p>Yulduzlaringizni foydali sovg‘alarga almashtiring!</p>
+  </section>
+
+  <section class="panel">
+    <div class="toolbar">
+      <input id="productSearch"
+             type="search"
+             placeholder="🔎 Mahsulot qidirish..."
+             aria-label="Mahsulot qidirish">
+
+      <select id="categoryFilter" aria-label="Tur bo‘yicha saralash">
+        <option value="all">Barcha mahsulotlar</option>
+        <option value="Kitob">Kitoblar</option>
+        <option value="Daftar">Daftarlar</option>
+        <option value="Ruchka">Ruchkalar</option>
+        <option value="Jihoz">Boshqa jihozlar</option>
+        <option value="Sovg‘a">Sovg‘alar</option>
+      </select>
+    </div>
+
+    <div id="shopStatus" class="muted" role="status">
+      Mahsulotlar yuklanmoqda...
+    </div>
+
+    <div class="shop-grid" id="shopGrid"></div>
+
+    <p class="smallprint">
+      Buyurtma berish va mahsulot mavjudligini bilish uchun Telegram orqali bog‘laning.
+    </p>
+  </section>
+
+  <section class="panel">
+    <h2>🧺 Buyurtma berish</h2>
+    <p class="muted">
+      Kerakli mahsulotni tanlang va buyurtmani markaz bilan kelishing.
+    </p>
+
+    <a class="btn"
+       href="tel:+998990616472">📞 Qo‘ng‘iroq qilish</a>
+
+    <a class="btn secondary"
+       href="https://t.me/sufi_ollohyor_uquv_markaz"
+       target="_blank" rel="noopener noreferrer">✈️ Telegram</a>
+  </section>
+
+</main>
+
+<footer class="footer wrap">
+  © 2026 So‘fi Ollohyor o‘quv markazi · Oltinsoy tumani
+  <br>
+  <span class="smallprint">Bilim · Tarbiya · Natija</span>
+</footer>
+
+<nav class="bottom-nav" id="bottomNav" aria-label="Asosiy menyu"></nav>
+
+<!-- Avval ma'lumotlar, keyin do‘kon kodi yuklanadi -->
+<script src="data.js"></script>
+<script src="app.js"></script>
+
+<script>
+(function () {
+  const grid = document.getElementById("shopGrid");
+  const status = document.getElementById("shopStatus");
+  const search = document.getElementById("productSearch");
+  const filter = document.getElementById("categoryFilter");
+
+  function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, function (char) {
+      return {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[char];
+    });
+  }
+
+  function loadProducts() {
+    const data = window.CENTER_DATA;
+
+    if (!data || !Array.isArray(data.products)) {
+      status.textContent =
+        "Mahsulotlar yuklanmadi. data.js faylida CENTER_DATA.products mavjudligini tekshiring.";
+      grid.innerHTML = "";
+      return;
+    }
+
+    const products = data.products;
+
+    function render() {
+      const query = search.value.trim().toLowerCase();
+      const category = filter.value;
+
+      const filtered = products.filter(function (product) {
+        const name = String(product.name || "");
+        const description = String(product.description || "");
+        const productCategory = String(product.category || "");
+
+        const matchesCategory =
+          category === "all" || productCategory === category;
+
+        const matchesSearch =
+          (name + " " + description + " " + productCategory)
+            .toLowerCase()
+            .includes(query);
+
+        return matchesCategory && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML =
+          '<p class="muted">Mahsulot topilmadi. Boshqa so‘z bilan qidiring.</p>';
+        status.textContent = "Mos mahsulotlar: 0";
+        return;
+      }
+
+      grid.innerHTML = filtered.map(function (product) {
+        const name = escapeHTML(product.name || "Mahsulot");
+        const description = escapeHTML(product.description || "");
+        const categoryText = escapeHTML(product.category || "Boshqa");
+        const icon = escapeHTML(product.icon || "🎁");
+        const stars = Math.max(0, Number(product.stars) || 0);
+        const telegram = escapeHTML(
+          data.telegram || "https://t.me/sufi_ollohyor_uquv_markaz"
+        );
+
+        return `
+          <article class="shop-card">
+            <div class="shop-visual">${icon}</div>
+            <div class="shop-body">
+              <span class="tag">${categoryText}</span>
+              <h3>${name}</h3>
+              <p class="muted">${description}</p>
+              <div class="shop-bottom">
+                <strong class="shop-price">⭐ ${stars} yulduz</strong>
+                <a class="btn shop-btn"
+                   href="${telegram}"
+                   target="_blank"
+                   rel="noopener noreferrer">Buyurtma</a>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      status.textContent = "Mahsulotlar soni: " + filtered.length;
+    }
+
+    search.addEventListener("input", render);
+    filter.addEventListener("change", render);
+    render();
+  }
+
+  loadProducts();
+})();
+</script>
+
+<script src="fx.js" defer></script>
+</body>
+</html>
