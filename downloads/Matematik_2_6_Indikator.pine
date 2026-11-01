@@ -1,0 +1,300 @@
+//@version=5
+indicator("Matematik Algoritm 2.6 LIVE | Takrorlanmas_robotlar", shorttitle="Matematik 2.6 LIVE [TR]", overlay=true, max_lines_count=500, max_boxes_count=500, max_labels_count=500)
+
+// ==============================================================================
+// MUALLIF MA'LUMOTLARI:
+// Dasturchi / Muallif: Takrorlanmas_robotlar
+// Telegram Kanal: @Takrorlanmas_robotlar
+// Tavsif: Tarixiy shovqinlar va repaintingdan to'liq xoli, FAQAT JORIY MOMENTDAGI
+//         bozor to'lqini, matematik 2.6 reaksiya zonasi va faol savdo rejasini
+//         toza professional chizmalarda ko'rsatuvchi indikator.
+// ==============================================================================
+
+// ==============================================================================
+// 1. INDIKATOR SOZLAMALARI (O'ZBEK TILIDA)
+// ==============================================================================
+var string G_ALGO  = "1. MATEMATIK ALGORITM SOZLAMALARI"
+var string G_ENTRY = "2. KIRISH VA XAVF (TP / SL)"
+var string G_DRAW  = "3. GRAFIK CHIZMALARI (FAQAT JORIY SIGNAL)"
+var string G_STYLE = "4. RANGLAR VA DIZAYN"
+var string G_DASH  = "5. DASHBOARD (AXBOROT PANELI)"
+
+// Algoritm parametrlari
+float coef          = input.float(2.6, "Matematik bo'lish koeffitsiyenti", minval=1.0, maxval=5.0, step=0.01, group=G_ALGO, tooltip="Videoda tushuntirilgan matematik koeffitsiyent: Diapazon / 2.6")
+int   leftBars      = input.int(5, "Pivot chap barlar (Swing Left)", minval=2, maxval=50, group=G_ALGO, tooltip="To'lqin cho'qqi va tagliklarini aniqlash")
+int   rightBars     = input.int(3, "Pivot o'ng barlar (Swing Right)", minval=1, maxval=30, group=G_ALGO, tooltip="To'lqinni tasdiqlash barlari")
+float minRange      = input.float(1.0, "Minimal to'lqin diapazoni", minval=0.1, step=0.5, group=G_ALGO)
+
+// Kirish va TP/SL sozlamalari
+string entryMode    = input.string("Zonaga tekkanda", "Kirish rejimi", options=["Zonaga tekkanda", "Sham yopilganda"], group=G_ENTRY)
+float  zonePerc     = input.float(15.0, "Reaksiya zonasi qalinligi (% hisobida)", minval=5.0, maxval=50.0, step=5.0, group=G_ENTRY)
+float  slPerc       = input.float(35.0, "Stop Loss masofasi (Offset %)", minval=15.0, maxval=100.0, step=5.0, group=G_ENTRY)
+
+// Chizma boshqaruvi (Faqat joriy moment)
+bool  showWaveBox   = input.bool(true, "Joriy To'lqin Diapazoni (Ko'k quti)ni chizish", group=G_DRAW)
+bool  showOffsetBox = input.bool(true, "÷2.6 Offset o'lchov qutisini chizish", group=G_DRAW)
+bool  showRrBlock   = input.bool(true, "Joriy TP / SL (Risk-Reward) blokini chizish", group=G_DRAW)
+bool  showPriceTags = input.bool(true, "O'ng tomondagi narx yorliqlarini ko'rsatish", group=G_DRAW)
+
+// Ranglar
+color colBuy        = input.color(#009688, "BUY rangi (Zumrad yashil)", group=G_STYLE)
+color colSell       = input.color(#E53935, "SELL rangi (Yoqut qizil)", group=G_STYLE)
+color colWave       = input.color(#1E88E5, "Diapazon o'lchov qutisi (Ko'k)", group=G_STYLE)
+color colDark       = input.color(#131722, "Asosiy yorliq foni (To'q ko'k)", group=G_STYLE)
+
+// Dashboard
+bool   showDash     = input.bool(true, "Dashboardni ko'rsatish", group=G_DASH)
+string dashPos      = input.string("O'ng-Yuqori", "Joylashuvi", options=["O'ng-Yuqori", "O'ng-Pastki", "Chap-Yuqori", "Chap-Pastki"], group=G_DASH)
+string dashSz       = input.string("O'rtacha", "O'lchami", options=["Kichik", "O'rtacha", "Katta"], group=G_DASH)
+
+// ==============================================================================
+// 2. PIVOT VA TO'LQINLARNI ANIQLASH (OXIRGI TASDIQLANGAN SWINGLAR)
+// ==============================================================================
+float ph = ta.pivothigh(high, leftBars, rightBars)
+float pl = ta.pivotlow(low, leftBars, rightBars)
+
+var float lastHighVal = na
+var int   lastHighBar = na
+var float lastLowVal  = na
+var int   lastLowBar  = na
+
+if not na(ph)
+    lastHighVal := ph
+    lastHighBar := bar_index - rightBars
+
+if not na(pl)
+    lastLowVal  := pl
+    lastLowBar  := bar_index - rightBars
+
+// To'lqin mavjudligini tekshirish
+bool hasValidWave = not na(lastHighVal) and not na(lastLowVal) and not na(lastHighBar) and not na(lastLowBar)
+
+// ==============================================================================
+// 3. MATEMATIK 2.6 ALGORITM HISOB-KITOBLARI (FAQAT JORIY HOLAT)
+// ==============================================================================
+float curRange = hasValidWave ? math.abs(lastHighVal - lastLowVal) : na
+float curOff   = hasValidWave and curRange >= minRange ? curRange / coef : na
+
+// Kutilayotgan yoki faol darajalar
+float buyTargetLevel  = hasValidWave and not na(curOff) ? lastLowVal - curOff : na
+float sellTargetLevel = hasValidWave and not na(curOff) ? lastHighVal + curOff : na
+
+float bSpan = not na(curOff) ? curOff * (zonePerc / 100.0) : 0.0
+float sSpan = not na(curOff) ? curOff * (zonePerc / 100.0) : 0.0
+
+// Joriy holatni baholash
+bool isBuyActive   = false
+bool isSellActive  = false
+bool isBuyWaiting  = false
+bool isSellWaiting = false
+
+if hasValidWave and not na(curOff)
+    // 1. BUY holati: narx lokal minimumdan pastga tushganmi?
+    if low <= lastLowVal
+        if entryMode == "Zonaga tekkanda"
+            isBuyActive := (low <= (buyTargetLevel + bSpan)) and (low >= (buyTargetLevel - bSpan * 2.5))
+        else
+            isBuyActive := (low <= buyTargetLevel) and (close > buyTargetLevel)
+    
+    // 2. SELL holati: narx lokal maksimumdan yuqoriga chiqqanmi?
+    if high >= lastHighVal
+        if entryMode == "Zonaga tekkanda"
+            isSellActive := (high >= (sellTargetLevel - sSpan)) and (high <= (sellTargetLevel + sSpan * 2.5))
+        else
+            isSellActive := (high >= sellTargetLevel) and (close < sellTargetLevel)
+
+    // Agar hozircha faol tegish bo'lmasa, qaysi zona kutilmoqda?
+    if not isBuyActive and not isSellActive
+        // Oxirgi hosil bo'lgan pivotga qarab yo'nalish aniqlanadi
+        if lastHighBar > lastLowBar
+            // Oxirgi High hosil bo'lgan, narx pastga Swing Low tomon boryapti -> BUY kutiladi
+            isBuyWaiting := true
+        else
+            // Oxirgi Low hosil bo'lgan, narx yuqoriga Swing High tomon boryapti -> SELL kutiladi
+            isSellWaiting := true
+
+// Joriy parametrlar
+string curStatus = isBuyActive ? "BUY SIGNALI FAOL" : isSellActive ? "SELL SIGNALI FAOL" : isBuyWaiting ? "BUY Zonasi Kutilmoqda" : isSellWaiting ? "SELL Zonasi Kutilmoqda" : "To'lqin Kutilmoqda"
+
+float curEntry = isBuyActive ? buyTargetLevel : isSellActive ? sellTargetLevel : isBuyWaiting ? buyTargetLevel : sellTargetLevel
+float curSL    = isBuyActive or isBuyWaiting ? buyTargetLevel - (curOff * (slPerc / 100.0)) : sellTargetLevel + (curOff * (slPerc / 100.0))
+float curTP1   = isBuyActive or isBuyWaiting ? lastLowVal : lastHighVal
+float curTP2   = isBuyActive or isBuyWaiting ? lastLowVal + (curRange * 0.5) : lastHighVal - (curRange * 0.5)
+
+// ==============================================================================
+// 4. GRAFIKKA FAQAT JORIY MOMENTNI CHIZISH (ZERO REPAINTING / ZERO CLUTTER)
+// ==============================================================================
+var box   boxWave      = na
+var box   boxOffset    = na
+var box   boxTp        = na
+var box   boxSl        = na
+var line  lineBrk      = na
+var line  lineEntry    = na
+var line  lineTp1      = na
+var line  lineTp2      = na
+var line  lineSl       = na
+var label lblMain      = na
+var label lblEntry     = na
+var label lblTp1       = na
+var label lblTp2       = na
+var label lblSl        = na
+
+// Har bir yangi bar yoki tikda eski joriy chizmalar to'liq tozalanadi (Tarixda hech narsa qolmaydi!)
+if barstate.islast
+    box.delete(boxWave)
+    box.delete(boxOffset)
+    box.delete(boxTp)
+    box.delete(boxSl)
+    line.delete(lineBrk)
+    line.delete(lineEntry)
+    line.delete(lineTp1)
+    line.delete(lineTp2)
+    line.delete(lineSl)
+    label.delete(lblMain)
+    label.delete(lblEntry)
+    label.delete(lblTp1)
+    label.delete(lblTp2)
+    label.delete(lblSl)
+
+    if hasValidWave and not na(curOff)
+        int rEdge = bar_index + 16
+        color actColor = (isBuyActive or isBuyWaiting) ? colBuy : colSell
+
+        // 1. VIDEODAGI KO'K DIAPAZON (TO'LQIN O'LCHOVI) QUTISI
+        if showWaveBox
+            int wLeft   = math.min(lastHighBar, lastLowBar)
+            int wRight  = math.max(lastHighBar, lastLowBar)
+            string wTxt = "📐 DIAPAZON (TO'LQIN): " + str.tostring(curRange, "#.##")
+            boxWave := box.new(wLeft, lastHighVal, wRight, lastLowVal, border_color=color.new(colWave, 15), border_width=1, bgcolor=color.new(colWave, 88), text=wTxt, text_size=size.small, text_color=colWave)
+
+        // 2. BREAKOUT SATHI CHIZIG'I VA ÷2.6 OFFSET O'LCHOV QUTISI
+        float brkPrice = (isBuyActive or isBuyWaiting) ? lastLowVal : lastHighVal
+        int   brkBar   = (isBuyActive or isBuyWaiting) ? lastLowBar : lastHighBar
+        float zonePrice = (isBuyActive or isBuyWaiting) ? buyTargetLevel : sellTargetLevel
+
+        lineBrk := line.new(brkBar, brkPrice, rEdge, brkPrice, color=color.new(actColor, 30), style=line.style_dashed, width=1)
+
+        if showOffsetBox
+            float oTop  = math.max(brkPrice, zonePrice)
+            float oBot  = math.min(brkPrice, zonePrice)
+            string oTxt = "÷ 2.6 OFFSET: " + ((isBuyActive or isBuyWaiting) ? "-" : "+") + str.tostring(curOff, "#.##")
+            boxOffset := box.new(brkBar, oTop, bar_index + 2, oBot, border_color=color.new(actColor, 20), border_style=line.style_dotted, bgcolor=color.new(actColor, 88), text=oTxt, text_size=size.small, text_color=actColor)
+
+        // 3. JORIY ASOSIY SIGNAL / KUTILAYOTGAN HOLAT YORLIG'I
+        string mainTxt = ""
+        color  mainBg  = colDark
+        color  mainTc  = #FFD700
+
+        if isBuyActive
+            mainTxt := "★ JORIY SIGNAL: BUY 2.6\nKirish: " + str.tostring(curEntry, "#.##") + " | Offset: " + str.tostring(curOff, "#.##")
+            mainBg  := colDark
+            mainTc  := #00E676
+        else if isSellActive
+            mainTxt := "★ JORIY SIGNAL: SELL 2.6\nKirish: " + str.tostring(curEntry, "#.##") + " | Offset: " + str.tostring(curOff, "#.##")
+            mainBg  := colDark
+            mainTc  := #FF5252
+        else if isBuyWaiting
+            mainTxt := "⏳ KUTILMOQDA: BUY ZONASI (÷2.6)\nMo'ljal: " + str.tostring(buyTargetLevel, "#.##")
+            mainBg  := colDark
+            mainTc  := colBuy
+        else if isSellWaiting
+            mainTxt := "⏳ KUTILMOQDA: SELL ZONASI (÷2.6)\nMo'ljal: " + str.tostring(sellTargetLevel, "#.##")
+            mainBg  := colDark
+            mainTc  := colSell
+
+        float yMain = (isBuyActive or isBuyWaiting) ? zonePrice - (curOff * 0.3) : zonePrice + (curOff * 0.3)
+        lblMain := label.new(bar_index, yMain, mainTxt, color=mainBg, textcolor=mainTc, style=(isBuyActive or isBuyWaiting) ? label.style_label_up : label.style_label_down, size=size.normal)
+
+        // 4. JORIY TP / SL (RISK-REWARD) BLOKLARI VA NARX TEGLARI
+        if showRrBlock
+            float tpTop = math.max(curEntry, curTP2)
+            float tpBot = math.min(curEntry, curTP2)
+            float slTop = math.max(curEntry, curSL)
+            float slBot = math.min(curEntry, curSL)
+
+            boxTp := box.new(bar_index, tpTop, rEdge, tpBot, border_color=color.new(colBuy, 40), bgcolor=color.new(colBuy, 86))
+            boxSl := box.new(bar_index, slTop, rEdge, slBot, border_color=color.new(colSell, 40), bgcolor=color.new(colSell, 86))
+
+            lineEntry := line.new(bar_index, curEntry, rEdge, curEntry, color=colDark, width=2)
+            lineTp1   := line.new(bar_index, curTP1, rEdge, curTP1, color=colBuy, width=1, style=line.style_dashed)
+            lineTp2   := line.new(bar_index, curTP2, rEdge, curTP2, color=colBuy, width=2)
+            lineSl    := line.new(bar_index, curSL, rEdge, curSL, color=colSell, width=2)
+
+            if showPriceTags
+                string tagE   = (isBuyActive or isBuyWaiting ? "KIRISH (BUY): " : "KIRISH (SELL): ") + str.tostring(curEntry, "#.##")
+                string tagTp1 = "TP 1 (Breakout): " + str.tostring(curTP1, "#.##")
+                string tagTp2 = "TP 2 (Asosiy): " + str.tostring(curTP2, "#.##")
+                string tagSl  = "STOP LOSS: " + str.tostring(curSL, "#.##")
+
+                lblEntry := label.new(rEdge, curEntry, tagE, color=colDark, textcolor=#FFD700, style=label.style_label_left, size=size.small)
+                lblTp1   := label.new(rEdge, curTP1, tagTp1, color=colBuy, textcolor=color.white, style=label.style_label_left, size=size.tiny)
+                lblTp2   := label.new(rEdge, curTP2, tagTp2, color=colBuy, textcolor=color.white, style=label.style_label_left, size=size.small)
+                lblSl    := label.new(rEdge, curSL, tagSl, color=colSell, textcolor=color.white, style=label.style_label_left, size=size.small)
+
+// ==============================================================================
+// 5. DASHBOARD (AXBOROT PANELI - FAQAT JORIY HOLAT)
+// ==============================================================================
+var table dash = na
+
+tPos = dashPos == "O'ng-Yuqori" ? position.top_right : dashPos == "O'ng-Pastki" ? position.bottom_right : dashPos == "Chap-Yuqori" ? position.top_left : position.bottom_left
+tSz  = dashSz == "Kichik" ? size.small : dashSz == "Katta" ? size.large : size.normal
+
+f_dash_cell(int _c, int _r, string _txt, color _tc, color _bg, string _al) =>
+    table.cell(dash, _c, _r, _txt, text_color=_tc, text_size=tSz, bgcolor=_bg, text_halign=_al)
+
+if showDash and barstate.islast
+    if na(dash)
+        dash := table.new(tPos, 2, 11, bgcolor=color.new(#0F141E, 5), border_color=color.new(#2A3241, 0), border_width=1)
+
+    color hBg  = #1A2130
+    color rBg1 = #0F141E
+    color rBg2 = #151C28
+    color tCol = #FFD700
+    color lCol = #B2B5BE
+    color aCol = isBuyActive ? #00E676 : isSellActive ? #FF5252 : isBuyWaiting ? colBuy : isSellWaiting ? colSell : lCol
+
+    f_dash_cell(0, 0, "Muallif:", tCol, hBg, text.align_left)
+    f_dash_cell(1, 0, "Takrorlanmas_robotlar", color.white, hBg, text.align_right)
+
+    f_dash_cell(0, 1, "Telegram:", #29B6F6, hBg, text.align_left)
+    f_dash_cell(1, 1, "@Takrorlanmas_robotlar", #29B6F6, hBg, text.align_right)
+
+    f_dash_cell(0, 2, "Strategiya:", lCol, rBg1, text.align_left)
+    f_dash_cell(1, 2, "Matematik (Diapazon ÷ " + str.tostring(coef, "#.#") + ")", #FFB74D, rBg1, text.align_right)
+
+    string rS = not na(curRange) ? str.tostring(curRange, "#.##") : "--"
+    f_dash_cell(0, 3, "Joriy To'lqin:", lCol, rBg2, text.align_left)
+    f_dash_cell(1, 3, rS, color.white, rBg2, text.align_right)
+
+    string oS = not na(curOff) ? str.tostring(curOff, "#.##") : "--"
+    f_dash_cell(0, 4, "Offset (÷2.6):", lCol, rBg1, text.align_left)
+    f_dash_cell(1, 4, oS, #00E676, rBg1, text.align_right)
+
+    f_dash_cell(0, 5, "★ BOZOR HOLATI:", tCol, hBg, text.align_left)
+    f_dash_cell(1, 5, curStatus, aCol, hBg, text.align_right)
+
+    string pS = not na(curEntry) ? str.tostring(curEntry, "#.##") : "--"
+    f_dash_cell(0, 6, "Mo'ljal Kirish:", lCol, rBg1, text.align_left)
+    f_dash_cell(1, 6, pS, color.white, rBg1, text.align_right)
+
+    string slS = not na(curSL) ? str.tostring(curSL, "#.##") : "--"
+    f_dash_cell(0, 7, "Stop Loss (SL):", lCol, rBg2, text.align_left)
+    f_dash_cell(1, 7, slS, #FF5252, rBg2, text.align_right)
+
+    string tp1S = not na(curTP1) ? str.tostring(curTP1, "#.##") : "--"
+    f_dash_cell(0, 8, "Take Profit 1 (TP1):", lCol, rBg1, text.align_left)
+    f_dash_cell(1, 8, tp1S, #00E676, rBg1, text.align_right)
+
+    string tp2S = not na(curTP2) ? str.tostring(curTP2, "#.##") : "--"
+    f_dash_cell(0, 9, "Take Profit 2 (TP2):", lCol, rBg2, text.align_left)
+    f_dash_cell(1, 9, tp2S, #00E676, rBg2, text.align_right)
+
+    string recTxt = isBuyActive ? "BUY ochish tavsiya" : isSellActive ? "SELL ochish tavsiya" : "Zonaga kelishini kuting"
+    f_dash_cell(0, 10, "Tavsiya:", lCol, rBg1, text.align_left)
+    f_dash_cell(1, 10, recTxt, aCol, rBg1, text.align_right)
+
+// ==============================================================================
+// 6. OGOHLANTIRISHLAR (ALERTS)
+// ==============================================================================
+alertcondition(isBuyActive, title="BUY 2.6 Faol Signal", message="[Takrorlanmas_robotlar] Matematik 2.6 BUY Signali Faol! Aktiv: {{ticker}}, Narx: {{close}}")
+alertcondition(isSellActive, title="SELL 2.6 Faol Signal", message="[Takrorlanmas_robotlar] Matematik 2.6 SELL Signali Faol! Aktiv: {{ticker}}, Narx: {{close}}")

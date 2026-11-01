@@ -1,9 +1,23 @@
 # Treder
 
-Jonli bozor grafiklari: BTCUSD, XAUUSD, ETHUSD, EURUSD, GBPUSD, USDJPY, USDUZS, XAGUSD, neft, SOL va S&P 500.
+Jonli bozor grafiklari va **Matematik 2.6** algoritmi signallari.
+
+## Fayllar
 
 - `index.html` — sahifa
 - `treder.css` — dizayn (qorongʻi / yorugʻ mavzu)
-- `treder.js` — valyutalar roʻyxati va TradingView vidjetlari
+- `treder.js` — TradingView vidjetlari: BTCUSD, XAUUSD, ETHUSD, EURUSD, GBPUSD, USDJPY, USDUZS, XAGUSD, neft, SOL, S&P 500
+- `algo26.js` — Matematik 2.6 algoritmining JavaScript talqini (Lightweight Charts + Binance jonli narxlari)
+- `vendor/` — TradingView Lightweight Charts™ 4.2.3 (Apache 2.0)
+- `downloads/` — Pine Script indikatori va qoʻllanma (muallif: [@Takrorlanmas_robotlar](https://t.me/takrorlanmas_robotlar))
 
-Yangi valyuta qoʻshish uchun `treder.js` dagi `SYMBOLS` roʻyxatiga qator qoʻshing.
+## Matematik 2.6
+
+TradingView vidjetlariga oʻzimizning Pine skriptimizni qoʻshib boʻlmaydi, shuning uchun algoritm `algo26.js` da qayta yozilgan:
+
+1. Oxirgi tasdiqlangan Swing High / Swing Low topiladi (pivot: chap 5, oʻng 3 sham).
+2. `Range = |Maks − Min|`, `Offset = Range / 2.6`.
+3. BUY zonasi: `Min − Offset`, SELL zonasi: `Maks + Offset`.
+4. SL: zonadan offsetning 35% narida; TP1: yorib oʻtilgan daraja; TP2: toʻlqinning 50%.
+
+Oltin uchun Binance'dagi PAXG/USDT ishlatiladi — u XAU/USD narxiga bogʻlangan token.

@@ -2,67 +2,228 @@
 <html lang="uz">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Treder — Jonli bozor grafiklari</title>
-  <meta name="description" content="BTCUSD, XAUUSD, EURUSD va boshqa valyutalarning onlayn grafiklari va narxlari.">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Treder — Jonli bozor va Matematik 2.6</title>
+  <meta name="description" content="BTCUSD, XAUUSD, EURUSD, USD/UZS va boshqa aktivlarning jonli grafiklari hamda Matematik 2.6 algoritmi signallari.">
+  <meta name="theme-color" content="#070a12">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="treder.css?v=2">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="treder.css?v=3">
 </head>
 <body>
+  <div class="bg-glow" aria-hidden="true"></div>
+
   <header class="topbar">
-    <div class="brand">
-      <span class="logo">▲</span>
+    <a class="brand" href="#top" aria-label="Treder bosh sahifa">
+      <span class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path d="M3 17l6-6 4 4 8-8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 7h6v6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
       <span class="brand-name">Treder</span>
-    </div>
+    </a>
+    <nav class="nav" aria-label="Boʻlimlar">
+      <a href="#bozor">Bozor</a>
+      <a href="#algo">Matematik 2.6</a>
+      <a href="#sharh">Sharh</a>
+      <a href="#yuklab">Yuklab olish</a>
+    </nav>
     <div class="topbar-actions">
-      <span class="live"><span class="dot"></span> Jonli</span>
-      <button id="themeToggle" class="btn-ghost" type="button" aria-label="Mavzuni almashtirish">☀︎</button>
+      <span class="live"><span class="dot"></span>Jonli</span>
+      <button id="themeToggle" class="icon-btn" type="button" aria-label="Mavzuni almashtirish">☀︎</button>
     </div>
   </header>
 
-  <!-- Yuguruvchi narxlar lentasi -->
   <div id="tickerTape" class="ticker"></div>
 
-  <main class="container">
-    <section class="toolbar">
-      <div id="symbolTabs" class="tabs" role="tablist"></div>
-      <div class="intervals" id="intervals" role="group" aria-label="Vaqt oraligʻi"></div>
+  <main id="top">
+    <!-- HERO -->
+    <section class="hero container">
+      <div class="hero-text">
+        <span class="eyebrow">Kripto · Forex · Metallar</span>
+        <h1>Bozorni <span class="grad">jonli</span> kuzating va <span class="grad">Matematik 2.6</span> bilan savdo rejasini tuzing</h1>
+        <p class="lead">Real vaqt grafiklari, texnik tahlil va soxta yorib oʻtish zonalarini oldindan hisoblaydigan algoritm — hammasi bitta sahifada.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="#algo">Matematik 2.6 signali</a>
+          <a class="btn btn-ghost" href="#bozor">Grafiklarni koʻrish</a>
+        </div>
+      </div>
+      <div class="hero-stats" id="heroStats" aria-live="polite">
+        <!-- treder.js toʻldiradi -->
+      </div>
     </section>
 
-    <section class="grid">
-      <div class="card chart-card">
-        <div class="card-head">
-          <h1 id="chartTitle">BTC / USD</h1>
-          <span id="chartSub" class="muted">Bitcoin</span>
+    <!-- BOZOR -->
+    <section id="bozor" class="section container">
+      <div class="section-head">
+        <div>
+          <h2>Jonli grafiklar</h2>
+          <p class="muted">Aktivni tanlang va vaqt oraligʻini oʻzgartiring.</p>
         </div>
-        <div id="mainChart" class="chart"></div>
       </div>
 
-      <aside class="side">
-        <div class="card">
-          <div class="card-head"><h2>Texnik tahlil</h2></div>
+      <div class="toolbar">
+        <div id="symbolTabs" class="chips" role="tablist" aria-label="Aktivlar"></div>
+        <div id="intervals" class="seg" role="group" aria-label="Vaqt oraligʻi"></div>
+      </div>
+
+      <div class="grid">
+        <div class="card chart-card">
+          <div class="card-head">
+            <div>
+              <h3 id="chartTitle">BTC / USD</h3>
+              <span id="chartSub" class="muted">Bitcoin</span>
+            </div>
+          </div>
+          <div id="mainChart" class="chart"></div>
+        </div>
+        <aside class="card">
+          <div class="card-head"><h3>Texnik tahlil</h3></div>
           <div id="techAnalysis" class="widget-ta"></div>
-        </div>
-      </aside>
+        </aside>
+      </div>
     </section>
 
-    <section class="grid-2">
-      <div class="card">
-        <div class="card-head"><h2>Bozor sharhi</h2></div>
-        <div id="marketOverview" class="widget-mo"></div>
+    <!-- MATEMATIK 2.6 -->
+    <section id="algo" class="section container">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Takrorlanmas_robotlar algoritmi</span>
+          <h2>Matematik 2.6 <span class="badge-live">LIVE</span></h2>
+          <p class="muted">Oxirgi toʻlqin diapazoni 2.6 ga boʻlinadi va narx qayerdan teskari reaksiya berishi hisoblanadi. Faqat joriy holat koʻrsatiladi.</p>
+        </div>
       </div>
-      <div class="card">
-        <div class="card-head"><h2>Iqtisodiy kalendar</h2></div>
-        <div id="calendar" class="widget-mo"></div>
+
+      <div class="toolbar">
+        <div id="algoSymbols" class="chips" role="tablist" aria-label="Algoritm aktivlari"></div>
+        <div id="algoIntervals" class="seg" role="group" aria-label="Algoritm vaqt oraligʻi"></div>
       </div>
+
+      <div class="grid">
+        <div class="card chart-card">
+          <div class="card-head">
+            <div>
+              <h3 id="algoTitle">BTC / USDT</h3>
+              <span id="algoSub" class="muted">Binance</span>
+            </div>
+            <span id="algoConn" class="conn">Ulanmoqda…</span>
+          </div>
+          <div class="algo-chart-wrap">
+            <div id="algoChart" class="chart"></div>
+            <canvas id="algoOverlay" class="overlay"></canvas>
+            <div id="algoMsg" class="chart-msg" hidden></div>
+          </div>
+          <div class="legend">
+            <span><i class="sw sw-wave"></i>Toʻlqin diapazoni</span>
+            <span><i class="sw sw-off"></i>÷2.6 offset</span>
+            <span><i class="sw sw-tp"></i>Take profit</span>
+            <span><i class="sw sw-sl"></i>Stop loss</span>
+          </div>
+        </div>
+
+        <aside class="card dash">
+          <div class="card-head"><h3>Savdo rejasi</h3></div>
+          <div class="dash-body">
+            <div id="algoStatus" class="status status-wait">
+              <span class="status-label">Bozor holati</span>
+              <strong id="algoStatusText">Hisoblanmoqda…</strong>
+            </div>
+            <dl class="kv">
+              <div><dt>Joriy narx</dt><dd id="kvPrice">—</dd></div>
+              <div><dt>Toʻlqin diapazoni</dt><dd id="kvRange">—</dd></div>
+              <div><dt>Offset (÷<span id="kvCoef">2.6</span>)</dt><dd id="kvOff" class="up">—</dd></div>
+              <div><dt>Moʻljal kirish</dt><dd id="kvEntry" class="gold">—</dd></div>
+              <div><dt>Stop loss</dt><dd id="kvSl" class="down">—</dd></div>
+              <div><dt>Take profit 1</dt><dd id="kvTp1" class="up">—</dd></div>
+              <div><dt>Take profit 2</dt><dd id="kvTp2" class="up">—</dd></div>
+              <div><dt>Risk / foyda</dt><dd id="kvRr">—</dd></div>
+            </dl>
+            <div id="algoRec" class="rec">Zonaga kelishini kuting</div>
+
+            <details class="settings">
+              <summary>Sozlamalar</summary>
+              <div class="settings-grid">
+                <label>Koeffitsiyent<input id="setCoef" type="number" step="0.01" min="1" max="5" value="2.6"></label>
+                <label>Pivot chap<input id="setLeft" type="number" min="2" max="50" value="5"></label>
+                <label>Pivot oʻng<input id="setRight" type="number" min="1" max="30" value="3"></label>
+                <label>Zona qalinligi %<input id="setZone" type="number" min="5" max="50" step="5" value="15"></label>
+                <label>Stop loss %<input id="setSl" type="number" min="15" max="100" step="5" value="35"></label>
+                <label>Kirish rejimi
+                  <select id="setMode">
+                    <option value="touch">Zonaga tekkanda</option>
+                    <option value="close">Sham yopilganda</option>
+                  </select>
+                </label>
+              </div>
+            </details>
+            <p class="fine">Signal maslahat emas. Bitimda depozitning 1–2% dan koʻpini xavf ostiga qoʻymang.</p>
+          </div>
+        </aside>
+      </div>
+
+      <div class="steps">
+        <div class="step"><span class="step-n">1</span><h4>Toʻlqinni aniqlash</h4><p>Oxirgi tasdiqlangan Swing High va Swing Low topiladi.</p></div>
+        <div class="step"><span class="step-n">2</span><h4>Diapazonni oʻlchash</h4><p>Range = |Maksimum − Minimum|</p></div>
+        <div class="step"><span class="step-n">3</span><h4>2.6 ga boʻlish</h4><p>Offset = Range ÷ 2.6 ≈ 38.4% — Fibonachchi 0.382 ga yaqin.</p></div>
+        <div class="step"><span class="step-n">4</span><h4>Reaksiya zonasi</h4><p>BUY: Minimum − Offset. SELL: Maksimum + Offset.</p></div>
+      </div>
+    </section>
+
+    <!-- SHARH -->
+    <section id="sharh" class="section container">
+      <div class="section-head"><div><h2>Bozor sharhi</h2></div></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><h3>Asosiy aktivlar</h3></div>
+          <div id="marketOverview" class="widget-mo"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Iqtisodiy kalendar</h3></div>
+          <div id="calendar" class="widget-mo"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- YUKLAB OLISH -->
+    <section id="yuklab" class="section container">
+      <div class="section-head">
+        <div>
+          <h2>Yuklab olish</h2>
+          <p class="muted">Indikatorni oʻz TradingView grafigingizga qoʻshing.</p>
+        </div>
+      </div>
+      <div class="dl-grid">
+        <a class="dl card" href="downloads/Matematik_2_6_Indikator.pine" download>
+          <span class="dl-icon">{ }</span>
+          <span class="dl-text"><strong>Matematik 2.6 LIVE indikatori</strong><span class="muted">Pine Script v5 · TradingView uchun</span></span>
+          <span class="dl-arrow">↓</span>
+        </a>
+        <a class="dl card" href="downloads/Matematik_2_6_Qollanma.pdf" target="_blank" rel="noopener">
+          <span class="dl-icon">PDF</span>
+          <span class="dl-text"><strong>Qoʻllanma</strong><span class="muted">Strategiya, BUY/SELL qoidalari, oʻrnatish</span></span>
+          <span class="dl-arrow">↗</span>
+        </a>
+        <a class="dl card" href="https://t.me/takrorlanmas_robotlar" target="_blank" rel="noopener">
+          <span class="dl-icon">TG</span>
+          <span class="dl-text"><strong>@Takrorlanmas_robotlar</strong><span class="muted">Yangi robotlar va indikatorlar</span></span>
+          <span class="dl-arrow">↗</span>
+        </a>
+      </div>
+      <ol class="howto">
+        <li>tradingview.com da grafikni oching (masalan, XAUUSD M5).</li>
+        <li>Pastdagi <b>Pine Editor</b> boʻlimini bosing.</li>
+        <li>Eski kodni oʻchirib, yuklab olingan <code>.pine</code> fayl matnini joylashtiring.</li>
+        <li><b>Save</b> va <b>Add to chart</b> tugmalarini bosing.</li>
+      </ol>
     </section>
   </main>
 
-  <footer class="footer">
-    <p>Maʼlumotlar <a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView</a> tomonidan taqdim etiladi. Bu investitsiya maslahati emas.</p>
+  <footer class="footer container">
+    <p>Grafiklar: <a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView</a> vidjetlari va <a href="https://www.tradingview.com/lightweight-charts/" target="_blank" rel="noopener">Lightweight Charts™</a>. Matematik 2.6 narxlari: Binance. Algoritm muallifi: <a href="https://t.me/takrorlanmas_robotlar" target="_blank" rel="noopener">Takrorlanmas_robotlar</a>.</p>
+    <p class="muted">Bu investitsiya maslahati emas.</p>
   </footer>
 
-  <script src="treder.js?v=2"></script>
+  <script src="vendor/lightweight-charts-4.2.3.js"></script>
+  <script src="treder.js?v=3"></script>
+  <script src="algo26.js?v=3"></script>
 </body>
 </html>

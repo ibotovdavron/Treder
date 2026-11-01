@@ -1,4 +1,4 @@
-// Treder — jonli bozor grafiklari (TradingView vidjetlari asosida)
+// Treder — TradingView vidjetlari (grafik, texnik tahlil, sharh, kalendar)
 
 const SYMBOLS = [
   { id: "BITSTAMP:BTCUSD", label: "BTCUSD", title: "BTC / USD", sub: "Bitcoin" },
@@ -45,6 +45,7 @@ function savePrefs() {
 
 // TradingView embed vidjetini konteynerga joylash
 function mountWidget(el, script, config) {
+  if (!el) return;
   el.innerHTML = "";
   const wrap = document.createElement("div");
   wrap.className = "tradingview-widget-container";
@@ -87,12 +88,17 @@ function renderChart() {
     theme: state.theme,
     style: "1",
     locale: LOCALE,
+    backgroundColor: "rgba(0,0,0,0)",
     allow_symbol_change: true,
     hide_side_toolbar: false,
     calendar: false,
     withdateranges: true,
     support_host: "https://www.tradingview.com",
   });
+}
+
+function taInterval(v) {
+  return { "1": "1m", "5": "5m", "15": "15m", "60": "1h", "240": "4h", D: "1D", W: "1W" }[v] || "1h";
 }
 
 function renderTA() {
@@ -107,10 +113,6 @@ function renderTA() {
     colorTheme: state.theme,
     locale: LOCALE,
   });
-}
-
-function taInterval(v) {
-  return { "1": "1m", "5": "5m", "15": "15m", "60": "1h", "240": "4h", D: "1D", W: "1W" }[v] || "1h";
 }
 
 function renderOverview() {
@@ -171,52 +173,47 @@ function renderCalendar() {
   });
 }
 
-function renderTabs() {
-  const box = $("symbolTabs");
+// Umumiy tugmalar qatori (chips / segment)
+function buttonRow(box, items, activeId, cls, onPick) {
   box.innerHTML = "";
-  SYMBOLS.forEach((s) => {
+  items.forEach((it) => {
     const b = document.createElement("button");
     b.type = "button";
-    b.className = "tab" + (s.id === state.symbol ? " active" : "");
-    b.textContent = s.label;
-    b.setAttribute("role", "tab");
-    b.setAttribute("aria-selected", s.id === state.symbol);
-    b.onclick = () => {
-      if (state.symbol === s.id) return;
-      state.symbol = s.id;
-      savePrefs();
-      renderTabs();
-      renderChart();
-      renderTA();
-    };
+    b.className = cls + (it.id === activeId ? " active" : "");
+    b.textContent = it.label;
+    b.setAttribute("aria-pressed", it.id === activeId);
+    b.onclick = () => { if (it.id !== activeId) onPick(it.id); };
     box.appendChild(b);
+  });
+}
+window.trederButtonRow = buttonRow;
+
+function renderTabs() {
+  buttonRow($("symbolTabs"), SYMBOLS, state.symbol, "chip", (id) => {
+    state.symbol = id;
+    savePrefs();
+    renderTabs();
+    renderChart();
+    renderTA();
   });
 }
 
 function renderIntervals() {
-  const box = $("intervals");
-  box.innerHTML = "";
-  INTERVALS.forEach((it) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "interval" + (it.v === state.interval ? " active" : "");
-    b.textContent = it.label;
-    b.onclick = () => {
-      if (state.interval === it.v) return;
-      state.interval = it.v;
-      savePrefs();
-      renderIntervals();
-      renderChart();
-      renderTA();
-    };
-    box.appendChild(b);
+  buttonRow($("intervals"), INTERVALS.map((i) => ({ id: i.v, label: i.label })), state.interval, "seg-btn", (id) => {
+    state.interval = id;
+    savePrefs();
+    renderIntervals();
+    renderChart();
+    renderTA();
   });
 }
 
 function applyTheme() {
   document.documentElement.dataset.theme = state.theme;
   $("themeToggle").textContent = state.theme === "dark" ? "☀︎" : "☾";
+  document.dispatchEvent(new CustomEvent("treder:theme", { detail: state.theme }));
 }
+window.trederTheme = () => state.theme;
 
 $("themeToggle").onclick = () => {
   state.theme = state.theme === "dark" ? "light" : "dark";
