@@ -3,7 +3,7 @@
 Jonli bozor grafiklari: BTCUSD, XAUUSD, ETHUSD, EURUSD, GBPUSD, USDJPY, USDUZS, XAGUSD, neft, SOL va S&P 500.
 
 - `index.html` — sahifa
-- `style.css` — dizayn (qorongʻi / yorugʻ mavzu)
-- `app.js` — valyutalar roʻyxati va TradingView vidjetlari
+- `treder.css` — dizayn (qorongʻi / yorugʻ mavzu)
+- `treder.js` — valyutalar roʻyxati va TradingView vidjetlari
 
-Yangi valyuta qoʻshish uchun `app.js` dagi `SYMBOLS` roʻyxatiga qator qoʻshing.
+Yangi valyuta qoʻshish uchun `treder.js` dagi `SYMBOLS` roʻyxatiga qator qoʻshing.
