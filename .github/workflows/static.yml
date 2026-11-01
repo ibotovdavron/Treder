@@ -2,8 +2,10 @@
 name: Deploy static content to Pages
 
 on:
-  # Avtomatik deploy o'chirilgan: Settings -> Pages'da custom domain yo'qligini
-  # tekshirgach, Actions sahifasidan qo'lda ishga tushiring.
+  # Runs on pushes targeting the default branch
+  push:
+    branches: ["main"]
+
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
