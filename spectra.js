@@ -355,7 +355,7 @@
     return { dir: st.dir[i], slope: ctx.slope[i], adx: ctx.adx[i] };
   }
 
-  window.trederSpectra = { compute, mtfPack, kalman, ema, rma, rsi, atr };
+  window.trederSpectra = { compute, mtfPack, kalman, ema, rma, rsi, atr, adx, sma, lowest, highest, DEFAULTS };
 
   // ===========================================================================
   // 4. GRAFIK

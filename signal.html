@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Treder Signal — Eng maqul harakat</title>
+  <meta name="description" content="Barcha indikatorlar konsensusi: BUY / SELL / KUTISH, kirish zonasi, TP1, TP2, stop loss va oʻzbek tilidagi jonli moliyaviy yangiliklar.">
+  <meta name="theme-color" content="#070a12">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="treder.css?v=6">
+</head>
+<body>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Treder bosh sahifa">
+      <span class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path d="M3 17l6-6 4 4 8-8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 7h6v6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="brand-name">Treder</span>
+    </a>
+    <nav class="nav" aria-label="Boʻlimlar">
+      <a href="index.html#bozor">Bozor</a>
+      <a href="signal.html" class="active" aria-current="page">Signal</a>
+      <a href="index.html#algo">Matematik 2.6</a>
+      <a href="index.html#spectra">SPECTRA</a>
+      <a href="#yangiliklar">Yangiliklar</a>
+    </nav>
+    <div class="topbar-actions">
+      <span class="live"><span class="dot"></span>Jonli</span>
+      <button id="themeToggle" class="icon-btn" type="button" aria-label="Mavzuni almashtirish">☀︎</button>
+    </div>
+  </header>
+
+  <div id="tickerTape" class="ticker"></div>
+
+  <nav class="mobile-tabs" aria-label="Sahifalar">
+    <a href="index.html">Bosh sahifa</a>
+    <a href="signal.html" class="active">Signal</a>
+    <a href="#skaner">Skaner</a>
+    <a href="#yangiliklar">Yangiliklar</a>
+  </nav>
+
+  <main>
+    <!-- ENG MAQUL HARAKAT -->
+    <section id="signal" class="section container">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Barcha indikatorlar konsensusi</span>
+          <h2>Eng maqul harakat <span class="badge-live">LIVE</span></h2>
+          <p class="muted">SPECTRA Clone, Matematik 2.6, Treder Pulse va katta vaqt oraliqlaridagi trend birga baholanadi. Ular kelishsa — BUY yoki SELL, kirish zonasi, stop loss va ikki maqsad; kelishmasa — KUTISH.</p>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div id="sgSymbols" class="chips" role="tablist" aria-label="Aktivlar"></div>
+        <div id="sgIntervals" class="seg" role="group" aria-label="Vaqt oraligʻi"></div>
+      </div>
+
+      <div class="grid">
+        <div class="card chart-card">
+          <div class="card-head">
+            <div>
+              <h3 id="sgTitle">BTC / USDT</h3>
+              <span id="sgSub" class="muted">Binance</span>
+            </div>
+            <span id="sgConn" class="conn">Ulanmoqda…</span>
+          </div>
+          <div class="algo-chart-wrap">
+            <div id="sgChart" class="chart"></div>
+            <canvas id="sgOverlay" class="overlay"></canvas>
+            <div id="sgMsg" class="chart-msg" hidden></div>
+          </div>
+          <div class="legend">
+            <span><i class="sw sw-off"></i>Kirish zonasi</span>
+            <span><i class="sw sw-tp"></i>TP1 / TP2</span>
+            <span><i class="sw sw-sl"></i>Stop loss</span>
+          </div>
+        </div>
+
+        <aside class="card dash">
+          <div class="dash-body">
+            <div id="sgAction" class="action-card is-wait">
+              <span class="status-label">Tavsiya</span>
+              <strong id="sgActionText">…</strong>
+              <span id="sgActionSub" class="muted">Hisoblanmoqda</span>
+              <div class="meter" aria-hidden="true"><i id="sgMeterFill"></i><span class="meter-mid"></span></div>
+              <div class="meter-scale"><span>SELL</span><b id="sgScore">0</b><span>BUY</span></div>
+            </div>
+            <dl class="kv">
+              <div><dt>Joriy narx</dt><dd id="sgPrice">—</dd></div>
+              <div><dt>Kirish zonasi</dt><dd id="sgZone" class="gold">—</dd></div>
+              <div><dt>Kirish</dt><dd id="sgEntry" class="gold">—</dd></div>
+              <div><dt>Stop loss</dt><dd id="sgSl" class="down">—</dd></div>
+              <div><dt>TP1</dt><dd id="sgTp1" class="up">—</dd></div>
+              <div><dt>TP2</dt><dd id="sgTp2" class="up">—</dd></div>
+              <div><dt>Risk / foyda</dt><dd id="sgRr">—</dd></div>
+              <div><dt>Stopgacha masofa</dt><dd id="sgRiskPct">—</dd></div>
+            </dl>
+            <p id="sgSource" class="fine"></p>
+          </div>
+        </aside>
+      </div>
+
+      <h3 class="sub-title">Indikatorlar ovozi</h3>
+      <div id="sgVotes" class="votes"></div>
+      <p class="fine sp-note">Treder Pulse — shu sayt uchun yozilgan indikator: EMA 50/200 trendi (40%), MACD momentum (30%), RSI (20%) va EMA20 qiyaligi (10%). Darajalar: kirish — EMA20 tomon 0.6 ATR gacha qaytish zonasi, SL — 20 sham ekstremumi ortida, TP1 = 1R, TP2 = 2R. Signal maslahat emas; bitimda depozitning 1–2% dan koʻpini xavf ostiga qoʻymang.</p>
+    </section>
+
+    <!-- SKANER -->
+    <section id="skaner" class="section container">
+      <div class="section-head">
+        <div>
+          <h2>Barcha aktivlar skaneri</h2>
+          <p class="muted">Tanlangan vaqt oraligʻida eng kuchli konsensus yuqorida. Qatorni bossangiz — grafikda ochiladi.</p>
+        </div>
+        <span id="sgScanTime" class="muted"></span>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table class="tbl">
+            <thead><tr><th>Aktiv</th><th>Harakat</th><th>Ball</th><th>Narx</th><th>Kirish zonasi</th><th>SL</th><th>TP1</th><th>TP2</th></tr></thead>
+            <tbody id="sgScanBody"><tr><td colspan="8" class="muted">Skanerlanmoqda…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- YANGILIKLAR -->
+    <section id="yangiliklar" class="section container">
+      <div class="section-head">
+        <div>
+          <h2>Jonli yangiliklar</h2>
+          <p class="muted">Forex, oltin, Bitcoin, Tesla va Oʻzbekiston iqtisodiyoti — har 5 daqiqada yangilanadi. Xorijiy sarlavhalar avtomatik oʻzbekchaga tarjima qilinadi.</p>
+        </div>
+        <span id="newsTime" class="muted"></span>
+      </div>
+      <div id="newsTabs" class="chips news-tabs" role="tablist" aria-label="Yangilik boʻlimlari"></div>
+      <div class="news-layout">
+        <div id="newsList" class="news-list"></div>
+        <aside class="card news-side">
+          <div class="card-head"><h3>TradingView lentasi</h3></div>
+          <div id="newsTimeline" class="widget-news"></div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer container">
+    <p>Narxlar: Binance. Grafik: <a href="https://www.tradingview.com/lightweight-charts/" target="_blank" rel="noopener">Lightweight Charts™</a>. Yangiliklar: Google News, Spot.uz, Gazeta.uz, Kun.uz, TradingView. Tarjima: Google Translate.</p>
+    <p class="muted">Bu investitsiya maslahati emas.</p>
+  </footer>
+
+  <script src="vendor/lightweight-charts-4.2.3.js"></script>
+  <script src="treder.js?v=6"></script>
+  <script src="market.js?v=6"></script>
+  <script src="algo26.js?v=6"></script>
+  <script src="spectra.js?v=6"></script>
+  <script src="signal.js?v=6"></script>
+  <script src="news.js?v=6"></script>
+</body>
+</html>

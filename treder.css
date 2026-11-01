@@ -353,3 +353,74 @@ a:hover { text-decoration: underline; }
 .tbl-foot { padding: 0 16px 14px; }
 .bias { font-size: 13px; font-weight: 700; white-space: nowrap; }
 .sp-note { margin-top: 12px; }
+
+/* Navigatsiya: faol havola va mobil tablar */
+.nav a.active { color: var(--text); background: var(--surface-2); }
+.mobile-tabs {
+  display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 60%, transparent);
+}
+.mobile-tabs::-webkit-scrollbar { display: none; }
+.mobile-tabs a {
+  flex: none; color: var(--muted); font-weight: 600; font-size: 14px;
+  padding: 7px 12px; border-radius: 999px; border: 1px solid var(--border);
+}
+.mobile-tabs a:hover { text-decoration: none; color: var(--text); }
+.mobile-tabs a.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+@media (min-width: 900px) { .mobile-tabs { display: none; } }
+
+/* Signal sahifasi */
+.action-card {
+  border-radius: 14px; padding: 16px; border: 1px solid var(--border);
+  background: var(--surface-2); display: flex; flex-direction: column; gap: 4px;
+}
+.action-card strong { font-size: 34px; font-weight: 800; letter-spacing: -.5px; line-height: 1.1; }
+.action-card.is-buy { border-color: color-mix(in srgb, var(--up) 55%, transparent); background: color-mix(in srgb, var(--up) 12%, transparent); }
+.action-card.is-buy strong { color: var(--up); }
+.action-card.is-sell { border-color: color-mix(in srgb, var(--down) 55%, transparent); background: color-mix(in srgb, var(--down) 12%, transparent); }
+.action-card.is-sell strong { color: var(--down); }
+.action-card.is-wait strong { color: var(--gold); }
+.meter { position: relative; height: 8px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); margin-top: 10px; overflow: hidden; }
+.meter i { position: absolute; top: 0; bottom: 0; display: block; border-radius: 999px; transition: width .3s, margin-left .3s; }
+.meter-mid { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 2px; background: var(--border-strong); }
+.meter-scale { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); font-weight: 600; }
+.meter-scale b { font-family: var(--mono); font-size: 14px; color: var(--text); }
+
+.sub-title { margin: 20px 0 10px; font-size: 18px; }
+.votes { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+@media (min-width: 640px) { .votes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .votes { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.vote { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.vote-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.vote-bar { position: relative; height: 6px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); }
+.vote-bar::after { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 2px; background: var(--border-strong); }
+.vote-bar i { position: absolute; top: 0; bottom: 0; border-radius: 999px; }
+.vote small { color: var(--muted); font-size: 12px; }
+.pill { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .5px; padding: 3px 8px; border-radius: 999px; background: var(--surface-2); color: var(--muted); border: 1px solid var(--border); white-space: nowrap; }
+.pill-buy { background: color-mix(in srgb, var(--up) 16%, transparent); color: var(--up); border-color: color-mix(in srgb, var(--up) 40%, transparent); }
+.pill-sell { background: color-mix(in srgb, var(--down) 16%, transparent); color: var(--down); border-color: color-mix(in srgb, var(--down) 40%, transparent); }
+.tbl tr.clickable { cursor: pointer; }
+.tbl tr.clickable:hover td { background: var(--surface-2); }
+
+/* Yangiliklar */
+.news-tabs { margin-bottom: 14px; }
+.news-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+@media (min-width: 1100px) { .news-layout { grid-template-columns: minmax(0, 1fr) 380px; align-items: start; } }
+.news-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+@media (min-width: 700px) { .news-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.news-item { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; color: var(--text); transition: border-color .15s, transform .15s; }
+.news-item:hover { text-decoration: none; border-color: var(--border-strong); transform: translateY(-2px); }
+.news-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 12px; color: var(--muted); }
+.news-cat { font-weight: 700; padding: 2px 8px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
+.news-cat[data-cat="gold"] { background: color-mix(in srgb, var(--gold) 18%, transparent); color: var(--gold); }
+.news-cat[data-cat="crypto"] { background: rgba(247, 147, 26, .16); color: #f7931a; }
+.news-cat[data-cat="stocks"] { background: color-mix(in srgb, var(--down) 14%, transparent); color: var(--down); }
+.news-cat[data-cat="uz"] { background: color-mix(in srgb, var(--up) 14%, transparent); color: var(--up); }
+.news-tr { font-style: italic; }
+.news-title { margin: 0; font-size: 15px; line-height: 1.4; font-weight: 700; }
+.news-orig { margin: 0; font-size: 12px; color: var(--muted); }
+.news-orig:empty, .news-desc:empty { display: none; }
+.news-desc { margin: 0; font-size: 13px; color: var(--muted); }
+.news-state { padding: 24px 0; }
+.widget-news { height: 640px; }

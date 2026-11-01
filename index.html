@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="treder.css?v=5">
+  <link rel="stylesheet" href="treder.css?v=6">
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -23,9 +23,11 @@
     </a>
     <nav class="nav" aria-label="Boʻlimlar">
       <a href="#bozor">Bozor</a>
+      <a href="signal.html">Signal</a>
       <a href="#algo">Matematik 2.6</a>
       <a href="#spectra">SPECTRA</a>
       <a href="#sharh">Sharh</a>
+      <a href="signal.html#yangiliklar">Yangiliklar</a>
       <a href="#yuklab">Yuklab olish</a>
     </nav>
     <div class="topbar-actions">
@@ -36,6 +38,14 @@
 
   <div id="tickerTape" class="ticker"></div>
 
+  <nav class="mobile-tabs" aria-label="Sahifalar">
+    <a href="index.html" class="active">Bosh sahifa</a>
+    <a href="signal.html">Signal</a>
+    <a href="#algo">2.6</a>
+    <a href="#spectra">SPECTRA</a>
+    <a href="signal.html#yangiliklar">Yangiliklar</a>
+  </nav>
+
   <main id="top">
     <!-- HERO -->
     <section class="hero container">
@@ -44,7 +54,8 @@
         <h1>Bozorni <span class="grad">jonli</span> kuzating va <span class="grad">Matematik 2.6</span> bilan savdo rejasini tuzing</h1>
         <p class="lead">Real vaqt grafiklari, texnik tahlil va soxta yorib oʻtish zonalarini oldindan hisoblaydigan algoritm — hammasi bitta sahifada.</p>
         <div class="hero-cta">
-          <a class="btn btn-primary" href="#algo">Matematik 2.6 signali</a>
+          <a class="btn btn-primary" href="signal.html">Eng maqul harakat</a>
+          <a class="btn btn-ghost" href="#algo">Matematik 2.6</a>
           <a class="btn btn-ghost" href="#bozor">Grafiklarni koʻrish</a>
         </div>
       </div>
@@ -364,9 +375,9 @@
   </footer>
 
   <script src="vendor/lightweight-charts-4.2.3.js"></script>
-  <script src="treder.js?v=5"></script>
-  <script src="market.js?v=5"></script>
-  <script src="algo26.js?v=5"></script>
-  <script src="spectra.js?v=5"></script>
+  <script src="treder.js?v=6"></script>
+  <script src="market.js?v=6"></script>
+  <script src="algo26.js?v=6"></script>
+  <script src="spectra.js?v=6"></script>
 </body>
 </html>

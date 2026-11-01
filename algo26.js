@@ -99,7 +99,8 @@
       lastIndex: n - 1,
     };
   }
-  window.trederAlgo26 = compute; // tekshiruv uchun
+  window.trederAlgo26 = compute; // signal.html va tekshiruv uchun
+  window.trederAlgo26Defaults = DEFAULTS;
 
   // ===========================================================================
   // 2. GRAFIK

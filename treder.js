@@ -222,15 +222,23 @@ $("themeToggle").onclick = () => {
   renderAll();
 };
 
+// signal.html kabi sahifalarda asosiy grafik yoʻq — faqat mavjud vidjetlar chiziladi
+const hasMain = !!$("mainChart");
+
 function renderAll() {
   renderTicker();
-  renderChart();
-  renderTA();
+  if (hasMain) {
+    renderChart();
+    renderTA();
+  }
   renderOverview();
   renderCalendar();
+  document.dispatchEvent(new CustomEvent("treder:render"));
 }
 
 applyTheme();
-renderTabs();
-renderIntervals();
+if (hasMain) {
+  renderTabs();
+  renderIntervals();
+}
 renderAll();
