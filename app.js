@@ -7,6 +7,7 @@ const SYMBOLS = [
   { id: "FX:EURUSD", label: "EURUSD", title: "EUR / USD", sub: "Yevro / Dollar" },
   { id: "FX:GBPUSD", label: "GBPUSD", title: "GBP / USD", sub: "Funt / Dollar" },
   { id: "FX:USDJPY", label: "USDJPY", title: "USD / JPY", sub: "Dollar / Iyena" },
+  { id: "FX_IDC:USDUZS", label: "USDUZS", title: "USD / UZS", sub: "Dollar / Soʻm" },
   { id: "OANDA:XAGUSD", label: "XAGUSD", title: "XAG / USD", sub: "Kumush" },
   { id: "TVC:USOIL", label: "USOIL", title: "WTI neft", sub: "AQSH neft" },
   { id: "BINANCE:SOLUSDT", label: "SOLUSDT", title: "SOL / USDT", sub: "Solana" },
@@ -141,6 +142,7 @@ function renderOverview() {
           { s: "FX:USDJPY", d: "USD/JPY" },
           { s: "FX:USDCHF", d: "USD/CHF" },
           { s: "FX:AUDUSD", d: "AUD/USD" },
+          { s: "FX_IDC:USDUZS", d: "USD/UZS" },
         ],
       },
       {

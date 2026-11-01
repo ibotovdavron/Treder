@@ -1,6 +1,6 @@
 # Treder
 
-Jonli bozor grafiklari: BTCUSD, XAUUSD, ETHUSD, EURUSD, GBPUSD, USDJPY, XAGUSD, neft, SOL va S&P 500.
+Jonli bozor grafiklari: BTCUSD, XAUUSD, ETHUSD, EURUSD, GBPUSD, USDJPY, USDUZS, XAGUSD, neft, SOL va S&P 500.
 
 - `index.html` — sahifa
 - `style.css` — dizayn (qorongʻi / yorugʻ mavzu)
