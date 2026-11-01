@@ -7,7 +7,9 @@ Jonli bozor grafiklari va **Matematik 2.6** algoritmi signallari.
 - `index.html` — sahifa
 - `treder.css` — dizayn (qorongʻi / yorugʻ mavzu)
 - `treder.js` — TradingView vidjetlari: BTCUSD, XAUUSD, ETHUSD, EURUSD, GBPUSD, USDJPY, USDUZS, XAGUSD, neft, SOL, S&P 500
-- `algo26.js` — Matematik 2.6 algoritmining JavaScript talqini (Lightweight Charts + Binance jonli narxlari)
+- `market.js` — umumiy maʼlumot qatlami: Binance jonli shamlari, grafik va narx kartochkalari
+- `algo26.js` — Matematik 2.6 algoritmining JavaScript talqini
+- `spectra.js` — SPECTRA Clone indikatorining JavaScript talqini (Kalman + Supertrend, TP/SL, backtest, MTF)
 - `vendor/` — TradingView Lightweight Charts™ 4.2.3 (Apache 2.0)
 - `downloads/` — Pine Script indikatori, qoʻllanma va Capital Guard V2 (MT5 roboti) (muallif: [@Takrorlanmas_robotlar](https://t.me/takrorlanmas_robotlar))
 

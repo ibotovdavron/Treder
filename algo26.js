@@ -5,29 +5,11 @@
 (() => {
   "use strict";
 
-  const API = "https://data-api.binance.vision/api/v3";
-  const WS = "wss://data-stream.binance.vision/ws";
-  const TZ_OFFSET = 5 * 3600; // Toshkent vaqti (UTC+5)
+  const M = window.TrederMarket;
   const FUTURE_BARS = 16;     // Pine: rEdge = bar_index + 16
   const STORE_KEY = "treder:algo";
-
-  const ASSETS = [
-    { id: "BTCUSDT", label: "BTC", title: "BTC / USDT", sub: "Bitcoin · Binance" },
-    { id: "PAXGUSDT", label: "Oltin", title: "PAXG / USDT", sub: "Oltin tokeni (XAU/USD narxiga bogʻlangan) · Binance" },
-    { id: "ETHUSDT", label: "ETH", title: "ETH / USDT", sub: "Ethereum · Binance" },
-    { id: "SOLUSDT", label: "SOL", title: "SOL / USDT", sub: "Solana · Binance" },
-    { id: "BNBUSDT", label: "BNB", title: "BNB / USDT", sub: "BNB · Binance" },
-    { id: "XRPUSDT", label: "XRP", title: "XRP / USDT", sub: "XRP · Binance" },
-  ];
-  const HERO = ["BTCUSDT", "PAXGUSDT", "ETHUSDT", "SOLUSDT"];
-  const TFS = [
-    { id: "1m", label: "M1" },
-    { id: "5m", label: "M5" },
-    { id: "15m", label: "M15" },
-    { id: "1h", label: "H1" },
-    { id: "4h", label: "H4" },
-    { id: "1d", label: "D1" },
-  ];
+  const ASSETS = M ? M.ASSETS : [];
+  const TFS = M ? M.TFS : [];
 
   const DEFAULTS = {
     symbol: "BTCUSDT", tf: "5m",
@@ -124,21 +106,16 @@
   // ===========================================================================
   const chartEl = $("algoChart");
   const overlay = $("algoOverlay");
-  if (!chartEl || !window.LightweightCharts) return;
+  if (!chartEl || !M || !window.LightweightCharts) return;
 
   let bars = [];
   let result = null;
   let decimals = 2;
   let levels = null;
   let priceLines = [];
+  let feed = null;
 
-  const chart = LightweightCharts.createChart(chartEl, {
-    autoSize: true,
-    layout: { background: { type: "solid", color: "transparent" }, fontFamily: "Inter, system-ui, sans-serif" },
-    rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.12, bottom: 0.12 } },
-    timeScale: { borderVisible: false, timeVisible: true, secondsVisible: false, rightOffset: FUTURE_BARS + 6 },
-    crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-  });
+  const { chart, prepare, onRedraw } = M.makeChart(chartEl, overlay, { futureBars: FUTURE_BARS });
 
   const series = chart.addCandlestickSeries({
     upColor: COL.buy, downColor: COL.sell, borderVisible: false,
@@ -156,49 +133,14 @@
     },
   });
 
-  function applyChartTheme() {
-    const dark = (window.trederTheme ? window.trederTheme() : "dark") === "dark";
-    chart.applyOptions({
-      layout: { textColor: dark ? "#8b93a9" : "#5b647a" },
-      grid: {
-        vertLines: { color: dark ? "rgba(255,255,255,0.04)" : "rgba(15,23,42,0.05)" },
-        horzLines: { color: dark ? "rgba(255,255,255,0.04)" : "rgba(15,23,42,0.05)" },
-      },
-    });
-    draw();
-  }
-  document.addEventListener("treder:theme", applyChartTheme);
-
-  function decimalsFor(price) {
-    if (price >= 100) return 2;
-    if (price >= 1) return 3;
-    if (price >= 0.01) return 5;
-    return 8;
-  }
-  const fmt = (v) => (v === null || v === undefined || !isFinite(v)) ? "—"
-    : Number(v).toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  const fmt = (v) => M.fmtNum(v, decimals);
+  const alpha = M.alpha;
 
   // ---- Canvas ustki qatlami: qutilar va chiziqlar ----
   function draw() {
-    const ctx = overlay.getContext("2d");
-    const w = chartEl.clientWidth, h = chartEl.clientHeight;
-    const dpr = window.devicePixelRatio || 1;
-    if (overlay.width !== Math.round(w * dpr) || overlay.height !== Math.round(h * dpr)) {
-      overlay.width = Math.round(w * dpr);
-      overlay.height = Math.round(h * dpr);
-      overlay.style.width = w + "px";
-      overlay.style.height = h + "px";
-    }
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, w, h);
+    const { ctx, paneW, paneH, X, Y } = prepare(series);
     const r = result;
     if (!r || !r.valid) return;
-
-    const ts = chart.timeScale();
-    const paneW = w - chart.priceScale("right").width();
-    const paneH = h - ts.height();
-    const X = (i) => ts.logicalToCoordinate(i);
-    const Y = (p) => series.priceToCoordinate(p);
 
     ctx.save();
     ctx.beginPath();
@@ -240,10 +182,6 @@
       ctx.stroke();
       ctx.setLineDash([]);
     };
-    const alpha = (hex, a) => {
-      const v = parseInt(hex.slice(1), 16);
-      return `rgba(${(v >> 16) & 255},${(v >> 8) & 255},${v & 255},${a})`;
-    };
 
     // 1. Toʻlqin diapazoni (koʻk quti)
     box(Math.min(r.hiB, r.loB), r.hiV, Math.max(r.hiB, r.loB), r.loV,
@@ -266,17 +204,7 @@
 
     ctx.restore();
   }
-
-  let rafPending = false;
-  function scheduleDraw() {
-    if (rafPending) return;
-    rafPending = true;
-    requestAnimationFrame(() => { rafPending = false; draw(); });
-  }
-  chart.timeScale().subscribeVisibleLogicalRangeChange(scheduleDraw);
-  chart.subscribeCrosshairMove(scheduleDraw);
-  new ResizeObserver(scheduleDraw).observe(chartEl);
-  setInterval(scheduleDraw, 1000); // narx shkalasi qoʻlda surilganda ham yangilansin
+  const scheduleDraw = onRedraw(draw);
 
   // ---- Natijani grafik va panelga chiqarish ----
   function recompute() {
@@ -340,17 +268,8 @@
   }
 
   // ===========================================================================
-  // 3. MAʼLUMOTLAR (Binance REST + WebSocket)
+  // 3. MAʼLUMOTLAR
   // ===========================================================================
-  let session = 0;
-  let ws = null;
-  let pollTimer = null;
-
-  const toBar = (k) => ({
-    time: Math.floor(k[0] / 1000) + TZ_OFFSET,
-    open: +k[1], high: +k[2], low: +k[3], close: +k[4],
-  });
-
   function setConn(text, cls) {
     const el = $("algoConn");
     el.textContent = text;
@@ -362,91 +281,33 @@
     el.textContent = text || "";
   }
 
-  async function fetchKlines(limit) {
-    const url = `${API}/klines?symbol=${cfg.symbol}&interval=${cfg.tf}&limit=${limit}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    return (await res.json()).map(toBar);
-  }
-
-  function upsert(bar) {
-    const last = bars[bars.length - 1];
-    if (last && bar.time === last.time) bars[bars.length - 1] = bar;
-    else if (!last || bar.time > last.time) { bars.push(bar); if (bars.length > 1000) bars.shift(); }
-    else return;
-    series.update(bar);
-  }
-
   let recomputeTimer = null;
-  function liveTick(bar) {
-    upsert(bar);
-    $("kvPrice").textContent = fmt(bar.close);
-    if (!recomputeTimer) recomputeTimer = setTimeout(() => { recomputeTimer = null; recompute(); }, 250);
-  }
-
-  function stopLive() {
-    if (ws) { ws.onclose = null; ws.onerror = null; ws.onmessage = null; try { ws.close(); } catch {} ws = null; }
-    clearInterval(pollTimer);
-    pollTimer = null;
-  }
-
-  function startPolling(my) {
-    clearInterval(pollTimer);
-    pollTimer = setInterval(async () => {
-      if (my !== session) return;
-      try {
-        (await fetchKlines(2)).forEach(liveTick);
-        setConn("Jonli (soʻrov)", "ok");
-      } catch { setConn("Aloqa yoʻq", "bad"); }
-    }, 5000);
-  }
-
-  function startWs(my, attempt = 0) {
-    let opened = false;
-    try {
-      ws = new WebSocket(`${WS}/${cfg.symbol.toLowerCase()}@kline_${cfg.tf}`);
-    } catch { startPolling(my); return; }
-    ws.onopen = () => { opened = true; setConn("Jonli", "ok"); clearInterval(pollTimer); pollTimer = null; };
-    ws.onmessage = (e) => {
-      if (my !== session) return;
-      const k = JSON.parse(e.data).k;
-      if (k) liveTick({ time: Math.floor(k.t / 1000) + TZ_OFFSET, open: +k.o, high: +k.h, low: +k.l, close: +k.c });
-    };
-    ws.onclose = () => {
-      if (my !== session) return;
-      if (!pollTimer) startPolling(my);
-      setConn(opened ? "Qayta ulanmoqda…" : "Jonli (soʻrov)", opened ? "" : "ok");
-      const delay = Math.min(30000, 2000 * 2 ** attempt);
-      setTimeout(() => { if (my === session) startWs(my, opened ? 0 : attempt + 1); }, delay);
-    };
-  }
-
-  async function loadSymbol() {
-    const my = ++session;
-    stopLive();
+  function loadSymbol() {
+    if (feed) feed.stop();
     const a = ASSETS.find((x) => x.id === cfg.symbol) || ASSETS[0];
     $("algoTitle").textContent = a.title;
     $("algoSub").textContent = a.sub;
-    setConn("Ulanmoqda…");
     showMsg("Narxlar yuklanmoqda…");
-    try {
-      const data = await fetchKlines(500);
-      if (my !== session) return;
-      bars = data;
-      decimals = decimalsFor(bars[bars.length - 1].close);
-      series.applyOptions({ priceFormat: { type: "price", precision: decimals, minMove: 1 / 10 ** decimals } });
-      series.setData(bars);
-      chart.timeScale().applyOptions({ rightOffset: FUTURE_BARS + 6 });
-      chart.timeScale().setVisibleLogicalRange({ from: bars.length - 120, to: bars.length + FUTURE_BARS + 6 });
-      showMsg("");
-      recompute();
-      startWs(my);
-    } catch (err) {
-      if (my !== session) return;
-      setConn("Aloqa yoʻq", "bad");
-      showMsg("Narxlarni yuklab boʻlmadi. Internet aloqasini tekshiring — 10 soniyadan soʻng qayta urinamiz.");
-      setTimeout(() => { if (my === session) loadSymbol(); }, 10000);
-    }
+    feed = M.createFeed({
+      symbol: cfg.symbol, tf: cfg.tf, limit: 500,
+      onConn: setConn,
+      onError: showMsg,
+      onLoad: (data) => {
+        bars = data;
+        decimals = M.decimalsFor(bars[bars.length - 1].close);
+        series.applyOptions({ priceFormat: { type: "price", precision: decimals, minMove: 1 / 10 ** decimals } });
+        series.setData(bars);
+        chart.timeScale().setVisibleLogicalRange({ from: bars.length - 120, to: bars.length + FUTURE_BARS + 6 });
+        showMsg("");
+        recompute();
+      },
+      onTick: (bar) => {
+        if (!M.upsertBar(bars, bar)) return;
+        series.update(bar);
+        $("kvPrice").textContent = fmt(bar.close);
+        if (!recomputeTimer) recomputeTimer = setTimeout(() => { recomputeTimer = null; recompute(); }, 250);
+      },
+    });
   }
 
   // ===========================================================================
@@ -481,50 +342,13 @@
   modeEl.value = cfg.mode;
   modeEl.addEventListener("change", () => { cfg.mode = modeEl.value; save(); recompute(); });
 
-  // ===========================================================================
-  // 5. BOSH SAHIFADAGI NARX KARTOCHKALARI
-  // ===========================================================================
-  async function loadHero() {
-    const box = $("heroStats");
-    if (!box) return;
-    try {
-      const url = `${API}/ticker/24hr?symbols=${encodeURIComponent(JSON.stringify(HERO))}`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      box.innerHTML = "";
-      HERO.forEach((id) => {
-        const t = data.find((d) => d.symbol === id);
-        const a = ASSETS.find((x) => x.id === id);
-        if (!t || !a) return;
-        const price = +t.lastPrice, chg = +t.priceChangePercent;
-        const d = decimalsFor(price);
-        const b = document.createElement("button");
-        b.type = "button";
-        b.className = "stat";
-        b.innerHTML = `
-          <div class="stat-top"><span class="stat-name"></span><span class="stat-chg ${chg >= 0 ? "up" : "down"}"></span></div>
-          <div class="stat-price"></div>
-          <div class="stat-sub"></div>`;
-        b.querySelector(".stat-name").textContent = a.title;
-        b.querySelector(".stat-chg").textContent = (chg >= 0 ? "+" : "") + chg.toFixed(2) + "%";
-        b.querySelector(".stat-price").textContent = price.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
-        b.querySelector(".stat-sub").textContent = id === "PAXGUSDT" ? "Oltin · 24 soat" : "24 soat";
-        b.onclick = () => {
-          cfg.symbol = id; save(); renderControls(); loadSymbol();
-          $("algo").scrollIntoView({ behavior: "smooth" });
-        };
-        box.appendChild(b);
-      });
-    } catch {
-      if (!box.children.length) box.innerHTML = '<p class="muted">Narxlarni yuklab boʻlmadi.</p>';
-    }
-  }
+  // Bosh sahifadagi kartochka bosilganda shu aktivni ochish
+  document.addEventListener("treder:pick", (e) => {
+    cfg.symbol = e.detail; save(); renderControls(); loadSymbol();
+    $("algo").scrollIntoView({ behavior: "smooth" });
+  });
 
-  applyChartTheme();
   renderControls();
   renderPanel();
   loadSymbol();
-  loadHero();
-  setInterval(loadHero, 15000);
 })();

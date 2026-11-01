@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="treder.css?v=4">
+  <link rel="stylesheet" href="treder.css?v=5">
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -24,6 +24,7 @@
     <nav class="nav" aria-label="Boʻlimlar">
       <a href="#bozor">Bozor</a>
       <a href="#algo">Matematik 2.6</a>
+      <a href="#spectra">SPECTRA</a>
       <a href="#sharh">Sharh</a>
       <a href="#yuklab">Yuklab olish</a>
     </nav>
@@ -168,6 +169,129 @@
       </div>
     </section>
 
+    <!-- SPECTRA -->
+    <section id="spectra" class="section container">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Signal Processing Engine</span>
+          <h2>SPECTRA Clone <span class="badge-live">LIVE</span></h2>
+          <p class="muted">Kalman filtrlangan Supertrend burilganda, narx Smart Trail ortida boʻlsa va RSI tasdiqlasa signal chiqadi. TP1 (1:1), TP2 (1:2), SL esa oxirgi 10 sham ekstremumi ortida. Faqat yopilgan shamlarda hisoblanadi — signal qayta chizilmaydi.</p>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div id="spSymbols" class="chips" role="tablist" aria-label="SPECTRA aktivlari"></div>
+        <div id="spIntervals" class="seg" role="group" aria-label="SPECTRA vaqt oraligʻi"></div>
+      </div>
+
+      <div class="grid">
+        <div class="card chart-card">
+          <div class="card-head">
+            <div>
+              <h3 id="spTitle">PAXG / USDT</h3>
+              <span id="spSub" class="muted">Binance</span>
+            </div>
+            <span id="spConn" class="conn">Ulanmoqda…</span>
+          </div>
+          <div class="algo-chart-wrap">
+            <div id="spChart" class="chart"></div>
+            <canvas id="spOverlay" class="overlay"></canvas>
+            <div id="spMsg" class="chart-msg" hidden></div>
+          </div>
+          <div class="legend">
+            <span><i class="sw" style="background:#00E676"></i>BUY / BUY+</span>
+            <span><i class="sw" style="background:#FF1744"></i>SELL / SELL+</span>
+            <span><i class="sw" style="background:#2196F3"></i>Bull sham</span>
+            <span><i class="sw" style="background:#787B86"></i>Neytral sham</span>
+            <span><i class="sw sw-tp"></i>TP zona</span>
+            <span><i class="sw sw-sl"></i>SL zona</span>
+          </div>
+        </div>
+
+        <aside class="card dash">
+          <div class="card-head"><h3>SPECTRA paneli</h3></div>
+          <div class="dash-body">
+            <div id="spStatus" class="status status-wait">
+              <span class="status-label">Holat</span>
+              <strong id="spStatusText">Hisoblanmoqda…</strong>
+            </div>
+            <dl class="kv">
+              <div><dt>Joriy narx</dt><dd id="spPrice">—</dd></div>
+              <div><dt>Kirish</dt><dd id="spEntry">—</dd></div>
+              <div><dt>Stop loss</dt><dd id="spSl">—</dd></div>
+              <div><dt>TP1 (1:1)</dt><dd id="spTp1">—</dd></div>
+              <div><dt>TP2 (1:2)</dt><dd id="spTp2">—</dd></div>
+            </dl>
+            <dl class="kv kv-dash">
+              <div><dt>Trend</dt><dd id="spTrend">—</dd></div>
+              <div><dt>Kuch</dt><dd id="spStrength">—</dd></div>
+              <div><dt>Bozor</dt><dd id="spMarket">—</dd></div>
+              <div><dt>Volatillik</dt><dd id="spVola">—</dd></div>
+              <div><dt>Hajm</dt><dd id="spVol">—</dd></div>
+              <div><dt>Momentum</dt><dd id="spMom">—</dd></div>
+            </dl>
+
+            <details class="settings" id="spSettings">
+              <summary>Sozlamalar</summary>
+              <div class="settings-grid">
+                <label>Signal sezgirligi<input data-key="sens" type="number" min="0.3" max="10" step="0.1"></label>
+                <label>Shovqin davri<input data-key="noiseLen" type="number" min="2" max="100" step="1"></label>
+                <label>Silliqlash<input data-key="smoothing" type="number" min="0.05" max="1" step="0.05"></label>
+                <label>Smart Trail<input data-key="trailSens" type="number" min="0.5" max="10" step="0.1"></label>
+                <label>RSI davri<input data-key="rsiLen" type="number" min="2" max="100" step="1"></label>
+                <label>Cooldown (sham)<input data-key="cooldown" type="number" min="0" max="100" step="1"></label>
+                <label>SL lookback<input data-key="slLook" type="number" min="1" max="100" step="1"></label>
+                <label>SL bufer (×ATR)<input data-key="slBuf" type="number" min="0" max="10" step="0.1"></label>
+                <label>TP rejimi
+                  <select data-key="tpMode">
+                    <option value="split">TP1 + TP2</option>
+                    <option value="tp1">Faqat TP1</option>
+                    <option value="tp2">Faqat TP2</option>
+                  </select>
+                </label>
+                <label>Xarajat (narxda)<input data-key="costPx" type="number" min="0" max="1000" step="0.05"></label>
+              </div>
+              <div class="checks">
+                <label><input data-key="useRsi" type="checkbox"> Momentum filtri</label>
+                <label><input data-key="useVol" type="checkbox"> Hajm filtri (BUY+/SELL+)</label>
+                <label><input data-key="earlyExit" type="checkbox"> Erta chiqish +/BE</label>
+                <label><input data-key="showTZ" type="checkbox"> TP/SL zonalari</label>
+                <label><input data-key="showTrail" type="checkbox"> Smart Trail chizigʻi</label>
+                <label><input data-key="showCloud" type="checkbox"> Trend buluti</label>
+                <label><input data-key="showRZ" type="checkbox"> Reversal zonalar</label>
+                <label><input data-key="colorBars" type="checkbox"> Shamlarni boʻyash</label>
+              </div>
+            </details>
+          </div>
+        </aside>
+      </div>
+
+      <div class="grid-2 sp-tables">
+        <div class="card">
+          <div class="card-head"><h3>Backtest statistikasi</h3></div>
+          <div class="table-wrap">
+            <table class="tbl">
+              <thead><tr><th>Turi</th><th>W / L</th><th>WR%</th><th>P/L</th><th>PF</th></tr></thead>
+              <tbody id="spBtBody"></tbody>
+            </table>
+          </div>
+          <div id="spOutcomes" class="outcomes"></div>
+          <p id="spBtFoot" class="fine tbl-foot"></p>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Koʻp vaqt oraligʻi (MTF)</h3><span id="spBias" class="bias">—</span></div>
+          <div class="table-wrap">
+            <table class="tbl">
+              <thead><tr><th>Vaqt</th><th>Trend</th><th>Kuch</th><th>Rejim</th></tr></thead>
+              <tbody id="spMtfBody"></tbody>
+            </table>
+          </div>
+          <p class="fine tbl-foot">Har bir vaqt oraligʻining oxirgi yopilgan shami. Joriy grafikdan kichik oraliqlar koʻrsatilmaydi.</p>
+        </div>
+      </div>
+      <p class="fine sp-note">SPECTRA Clone — “SPECTRA – Signal Processing Engine [SentioEdge]” indikatorining ochiq materiallar asosida mustaqil qayta yaratilgan versiyasi, original kod emas. Backtest faqat yuklangan tarix boʻyicha va kelajak natijasini kafolatlamaydi.</p>
+    </section>
+
     <!-- SHARH -->
     <section id="sharh" class="section container">
       <div class="section-head"><div><h2>Bozor sharhi</h2></div></div>
@@ -202,6 +326,11 @@
           <span class="dl-text"><strong>Qoʻllanma</strong><span class="muted">Strategiya, BUY/SELL qoidalari, oʻrnatish</span></span>
           <span class="dl-arrow">↗</span>
         </a>
+        <a class="dl card" href="downloads/SPECTRA_Clone.pine" download>
+          <span class="dl-icon">{ }</span>
+          <span class="dl-text"><strong>SPECTRA Clone indikatori</strong><span class="muted">Pine Script v6 · TradingView uchun</span></span>
+          <span class="dl-arrow">↓</span>
+        </a>
         <a class="dl card" href="downloads/Capital_Guard_V2.ex5" download>
           <span class="dl-icon">EA</span>
           <span class="dl-text"><strong>Capital Guard V2</strong><span class="muted">MetaTrader 5 roboti · .ex5</span></span>
@@ -235,7 +364,9 @@
   </footer>
 
   <script src="vendor/lightweight-charts-4.2.3.js"></script>
-  <script src="treder.js?v=3"></script>
-  <script src="algo26.js?v=3"></script>
+  <script src="treder.js?v=5"></script>
+  <script src="market.js?v=5"></script>
+  <script src="algo26.js?v=5"></script>
+  <script src="spectra.js?v=5"></script>
 </body>
 </html>

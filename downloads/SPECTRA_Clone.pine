@@ -1,0 +1,738 @@
+//@version=6
+// ─────────────────────────────────────────────────────────────────────────────
+//  SPECTRA Clone [Treyding]  v2.0  (31.10.2026)
+//  Clean-room reimplementation of "SPECTRA - Signal Processing Engine [SentioEdge]"
+//  (invite-only, closed source). Built from public material only: script page,
+//  the author's setup video (frames, tooltips, Style tab) and real trades visible
+//  in it. This is NOT the original code.
+//
+//  Calibration (XAUUSD M5, settings 1.5 / 9 / 0.7 / 2.1 / 9, MT5 data):
+//   • signals hit the exact bars of the original: SELL+ 29.04 01:00, BUY 29.04 14:20
+//     (server time); SL = lowest(10) − 1×ATR(9) reproduced to ~$0.06;
+//   • last 115 trades: 58/57, WR 50.4%, P/L +308, PF 1.11
+//     vs the original's table 60/55, 52.2%, +304, PF 1.11.
+//  Not exact: Kalman formula and its scaling are ours; volume (BUY+/SELL+) depends
+//  on the data feed; dashboard thresholds are guesses.
+//
+//  Engine: Kalman(HL2) + Kalman(ATR) → Supertrend. A signal fires on the bar where
+//  the Supertrend flips AND price is beyond the Smart Trail AND RSI agrees AND the
+//  cooldown has passed. While a trade is open new signals are suppressed
+//  (unless "Allow Early Exit +/BE" and the trade is at breakeven or better).
+//  Non-repainting: everything runs on confirmed bars; MTF uses expr[1] + lookahead_on.
+// ─────────────────────────────────────────────────────────────────────────────
+
+indicator("SPECTRA Clone [Treyding]", "SPECTRA-C", overlay = true,
+     max_labels_count = 500, max_lines_count = 500, max_boxes_count = 500)
+
+// ═════════════════════════════════════════════════════════════════════════════
+//  INPUTS (names, order, tooltips and values follow the original's Inputs tab)
+// ═════════════════════════════════════════════════════════════════════════════
+
+var string G1 = "🎯 SIGNAL ENGINE"
+float sens      = input.float(1.5, "Signal Sensitivity", minval = 0.3, step = 0.1, group = G1,
+     tooltip = "Higher = fewer but stronger signals. Lower = more frequent signals.")
+int   noiseLen  = input.int(9, "Market Noise Period", minval = 2, group = G1,
+     tooltip = "Lookback for measuring market noise. Default 10.")
+float smoothing = input.float(0.7, "Signal Smoothing", minval = 0.05, maxval = 1.0, step = 0.05, group = G1,
+     tooltip = "Lower = smoother signals (less noise). Higher = faster reaction.")
+float trailSens = input.float(2.1, "Smart Trail Sensitivity", minval = 0.5, step = 0.1, group = G1,
+     tooltip = "Higher = wider trail, fewer flips. Lower = tighter trail.")
+int   rsiLen    = input.int(9, "Momentum Period", minval = 2, group = G1)
+bool  useRsi    = input.bool(true, "Enable Momentum Filter", group = G1,
+     tooltip = "BUY needs RSI > 50 and rising, SELL needs RSI < 50 and falling.")
+bool  useVol    = input.bool(true, "Enable Volume Filter", group = G1,
+     tooltip = "Signal-bar volume above its average → Strong signal (BUY+ / SELL+).")
+int   volLen    = input.int(20, "Volume Average Period", minval = 2, group = G1)
+int   cooldown  = input.int(5, "Signal Cooldown (bars)", minval = 0, group = G1)
+bool  earlyExit = input.bool(false, "Allow Early Exit +/BE", group = G1,
+     tooltip = "A new signal while the open trade is in profit or at breakeven closes it " +
+               "(Exit +/BE) and opens the new trade. Otherwise signals are suppressed while a trade is open.")
+bool  sigHl     = input.bool(false, "Signal Bar Highlight", group = G1)
+
+var string G2 = "💰 TP / SL MANAGEMENT"
+bool   showTZ    = input.bool(true, "Show TP/SL Levels", group = G2)
+bool   useTP1    = input.bool(true, "Enable TP1 (1:1)", group = G2,
+     tooltip = "TP1 + TP2 on: half the position exits at TP1, half at TP2. The stop is not moved.")
+bool   useTP2    = input.bool(true, "Enable TP2 (1:2)", group = G2)
+int    slLook    = input.int(10, "Stop Loss Lookback", minval = 1, group = G2,
+     tooltip = "How many bars back to look for support/resistance for SL placement.")
+float  slBuf     = input.float(1.0, "Stop Loss Buffer", minval = 0, step = 0.1, group = G2,
+     tooltip = "Extra distance beyond the swing, × ATR (Market Noise Period).")
+string tzStyle   = input.string("Boxes", "TP/SL Style", options = ["Boxes", "Lines"], group = G2)
+bool   tzFill    = input.bool(true, "Show TP/SL Fill", group = G2)
+bool   tzBorders = input.bool(false, "Show Box Side Borders", group = G2)
+color  cTP       = input.color(#00E676, "TP Color", group = G2)
+color  cSL       = input.color(#FF1744, "SL Color", group = G2)
+color  cEnt      = input.color(#FFA000, "Entry Color", group = G2)
+int    tzWidth   = input.int(2, "TP/SL Line Width", minval = 1, maxval = 4, group = G2)
+string tp1StyleS = input.string("Solid", "TP1 Line Style", options = ["Solid", "Dashed", "Dotted"], group = G2)
+string tp2StyleS = input.string("Solid", "TP2 Line Style", options = ["Solid", "Dashed", "Dotted"], group = G2)
+string slStyleS  = input.string("Solid", "SL Line Style", options = ["Solid", "Dashed", "Dotted"], group = G2)
+string enStyleS  = input.string("Solid", "Entry Line Style", options = ["Solid", "Dashed", "Dotted"], group = G2)
+
+var string G3 = "▦ DASHBOARD"
+bool   showDash = input.bool(false, "Show Dashboard", group = G3)
+string dashPosS = input.string("Bottom Right", "Position", options = ["Top Right", "Middle Right", "Bottom Right", "Top Left", "Middle Left", "Bottom Left"], group = G3)
+
+var string G4 = "▦ BACKTEST STATISTICS"
+bool   showBt   = input.bool(false, "Show Backtest Table", group = G4)
+string btPosS   = input.string("Bottom Left", "Position", options = ["Top Right", "Middle Right", "Bottom Right", "Top Left", "Middle Left", "Bottom Left"], group = G4)
+int    maxTrk   = input.int(500, "Max Trades to Track", minval = 10, maxval = 2000, group = G4,
+     tooltip = "Statistics cover the last N closed trades of the loaded history only.")
+bool   showPF   = input.bool(true, "Show Profit Factor", group = G4)
+float  costPx   = input.float(0.0, "Cost per trade (price units)", minval = 0, step = 0.05, group = G4,
+     tooltip = "NOT in the original. Spread + commission per round trip (XAUUSD ≈ 0.30). 0 = original behaviour.")
+
+var string G5 = "🔎 MULTI-TIMEFRAME PANEL"
+bool   showMtf  = input.bool(false, "Show MTF Panel", group = G5)
+string mtfPosS  = input.string("Top Right", "Position", options = ["Top Right", "Middle Right", "Bottom Right", "Top Left", "Middle Left", "Bottom Left"], group = G5)
+string tf1 = input.timeframe("5",   "Timeframe 1", group = G5)
+string tf2 = input.timeframe("15",  "Timeframe 2", group = G5)
+string tf3 = input.timeframe("60",  "Timeframe 3", group = G5)
+string tf4 = input.timeframe("240", "Timeframe 4", group = G5)
+string tf5 = input.timeframe("1D",  "Timeframe 5", group = G5)
+string tf6 = input.timeframe("1W",  "Timeframe 6", group = G5)
+
+var string G6 = "🎨 TABLE STYLE"
+color  tBgC     = input.color(#000000, "Background Color", group = G6)
+int    tBgT     = input.int(10, "Background Opacity", minval = 0, maxval = 100, group = G6, tooltip = "Transparency of the table background, 0 = solid.")
+color  tBrC     = input.color(#2A2E39, "Border Color", group = G6)
+color  tTxC     = input.color(#B2B5BE, "Text Color", group = G6)
+color  tHdC     = input.color(#FFFFFF, "Header / Value Color", group = G6)
+string tSizeS   = input.string("Normal", "Text Size", options = ["Tiny", "Small", "Normal", "Large"], group = G6)
+
+var string G7 = "📈 OVERLAYS"
+bool  showTrail = input.bool(false, "Show Smart Trail", group = G7)
+color cTrBull   = input.color(#00E676, "Trail Bull Color", group = G7)
+color cTrBear   = input.color(#FF1744, "Trail Bear Color", group = G7)
+int   trWidth   = input.int(2, "Trail Width", minval = 1, maxval = 4, group = G7)
+bool  showCloud = input.bool(false, "Show Trend Cloud", group = G7)
+color cCloud    = input.color(#2962FF, "Cloud Color", group = G7)
+int   cloudOp   = input.int(77, "Cloud Opacity", minval = 0, maxval = 100, group = G7, tooltip = "Transparency of the densest cloud layer.")
+bool  showRZ    = input.bool(false, "Show Reversal Zones", group = G7)
+color cOB       = input.color(#FF1744, "Overbought Zone Color", group = G7)
+color cOS       = input.color(#2196F3, "Oversold Zone Color", group = G7)
+int   zoneOp    = input.int(78, "Zone Opacity", minval = 0, maxval = 100, group = G7)
+bool  colorBars = input.bool(true, "Enable Candle Coloring", group = G7)
+color cCBull    = input.color(#2196F3, "Candle Bull Color", group = G7)
+color cCBear    = input.color(#FF1744, "Candle Bear Color", group = G7)
+color cCNeut    = input.color(#787B86, "Candle Neutral Color", group = G7)
+
+// fixed colours
+color cBull = #00E676
+color cBear = #FF1744
+color cWarn = #FFD600
+color cNeut = #787B86
+
+// derived
+// Calibrated mapping: smoothing 0.7 ≡ internal Kalman trust 0.224 (matched to the
+// original's signals). Monotonic: higher smoothing input = faster filter (tooltip).
+float  trust  = math.min(0.95, math.max(0.01, 0.32 * smoothing))
+string tpMode = useTP1 and useTP2 ? "Split" : useTP1 ? "TP1" : "TP2"
+
+// ═════════════════════════════════════════════════════════════════════════════
+//  CORE FUNCTIONS (also used inside request.security for the MTF panel)
+// ═════════════════════════════════════════════════════════════════════════════
+
+// Adaptive 1-D Kalman filter. R ~ variance of bar-to-bar change scaled by
+// (1 - trust)/trust; Q ~ squared short-term drift (trend → faster, chop → smoother).
+kalman(float src, int len, float tr) =>
+    var float x = na
+    var float p = 1.0
+    float d     = nz(src - src[1])
+    float varM  = ta.ema(d * d, len * 2)
+    float drift = ta.ema(d, len)
+    float q     = drift * drift + nz(varM) * 0.01
+    float r     = nz(varM) * (1.0 - tr) / math.max(tr, 0.01)
+    if na(x)
+        x := src
+        p := r
+    else if not na(src)
+        float pp = p + q
+        float k  = pp + r > 0 ? pp / (pp + r) : 1.0
+        x := x + k * (src - x)
+        p := (1.0 - k) * pp
+    x
+
+// Supertrend on Kalman-smoothed HL2 and Kalman-smoothed ATR. dir: +1 bull, -1 bear.
+stCore(float mult, int len, float tr) =>
+    float kSrc = kalman(hl2, len, tr)
+    float kAtr = kalman(ta.atr(len), len, tr)
+    float up   = kSrc - mult * kAtr
+    float dn   = kSrc + mult * kAtr
+    var float upB = na
+    var float dnB = na
+    var int   dir = 1
+    float pUp = upB
+    float pDn = dnB
+    upB := na(pUp) ? up : close[1] > pUp ? math.max(up, pUp) : up
+    dnB := na(pDn) ? dn : close[1] < pDn ? math.min(dn, pDn) : dn
+    if not na(pUp) and not na(pDn)
+        if dir == -1 and close > pDn
+            dir := 1
+        else if dir == 1 and close < pUp
+            dir := -1
+    [kSrc, kAtr, upB, dnB, dir]
+
+// Context: EMA21 slope over 5 bars in ATR units (signed) and ADX.
+ctxCore() =>
+    float e = ta.ema(close, 21)
+    float a = ta.atr(14)
+    float slope = a > 0 ? (e - e[5]) / a : 0.0
+    [diP, diM, adxV] = ta.dmi(14, 14)
+    [slope, adxV]
+
+mtfPack() =>
+    [k1, k2, u1, d1, dr] = stCore(sens, noiseLen, trust)
+    [sl, ad] = ctxCore()
+    [dr[1], sl[1], ad[1]]
+
+posOf(string s) =>
+    switch s
+        "Top Right"    => position.top_right
+        "Middle Right" => position.middle_right
+        "Bottom Right" => position.bottom_right
+        "Top Left"     => position.top_left
+        "Middle Left"  => position.middle_left
+        => position.bottom_left
+
+lineStyle(string s) =>
+    switch s
+        "Dashed" => line.style_dashed
+        "Dotted" => line.style_dotted
+        => line.style_solid
+
+tSize() =>
+    switch tSizeS
+        "Tiny"  => size.tiny
+        "Small" => size.small
+        "Large" => size.large
+        => size.normal
+
+fmtPx(float x) =>
+    na(x) ? "—" : (x >= 0 ? "+" : "") + str.tostring(x, format.mintick)
+
+fmtSigned(float x, string f) =>
+    na(x) ? "—" : (x >= 0 ? "+" : "") + str.tostring(x, f)
+
+// ═════════════════════════════════════════════════════════════════════════════
+//  SERIES (every bar)
+// ═════════════════════════════════════════════════════════════════════════════
+
+[kSrc, kAtr, stUp, stDn, stDir] = stCore(sens, noiseLen, trust)
+[slope, adxV] = ctxCore()
+
+float atrR  = ta.atr(noiseLen)
+float rsiV  = ta.rsi(close, rsiLen)
+float volMa = ta.sma(volume, volLen)
+float swLo  = ta.lowest(low, slLook)
+float swHi  = ta.highest(high, slLook)
+float vwma  = ta.vwma(close, 50)
+float atr50 = ta.atr(50)
+float atrP  = close > 0 ? atrR / close * 100 : na
+float atrPm = ta.sma(atrP, 100)
+
+bool  ready = barstate.isconfirmed and not na(atrR) and atrR > 0 and not na(stUp)
+
+// Smart Trail: classic ATR trailing stop, width = sensitivity × ATR(noise period).
+float tm = trailSens * atrR
+var float trail = na
+float pt = trail
+if not na(tm)
+    if na(pt)
+        trail := close - tm
+    else if close > pt and close[1] > pt
+        trail := math.max(pt, close - tm)
+    else if close < pt and close[1] < pt
+        trail := math.min(pt, close + tm)
+    else if close > pt
+        trail := close - tm
+    else
+        trail := close + tm
+
+bool stFlipUp  = stDir == 1  and stDir[1] == -1
+bool stFlipDn  = stDir == -1 and stDir[1] == 1
+bool rsiLong   = not useRsi or (rsiV > 50 and rsiV > rsiV[1])
+bool rsiShort  = not useRsi or (rsiV < 50 and rsiV < rsiV[1])
+bool trailL    = not na(trail) and close > trail
+bool trailS    = not na(trail) and close < trail
+bool volStrong = useVol and not na(volume) and not na(volMa) and volume > volMa
+
+var int lastSigBar = -100000
+bool cdOk  = bar_index - lastSigBar >= cooldown
+bool candL = ready and stFlipUp and trailL and rsiLong  and cdOk
+bool candS = ready and stFlipDn and trailS and rsiShort and cdOk
+
+// ═════════════════════════════════════════════════════════════════════════════
+//  TRADE ENGINE
+// ═════════════════════════════════════════════════════════════════════════════
+
+const int OUT_TP1   = 1   // TP1-only mode
+const int OUT_TP2   = 2   // TP2-only mode
+const int OUT_TP12  = 3   // split: TP1 + TP2
+const int OUT_TP1SL = 4   // split: TP1 then SL (breakeven)
+const int OUT_SL    = 5   // full stop
+const int OUT_EARLY = 6   // Exit +/BE
+
+type Pos
+    int   dir
+    bool  strong
+    float entry
+    float sl
+    float tp1
+    float tp2
+    float risk
+    int   openBar
+    int   stage      // 0 = nothing hit, 1 = TP1 hit
+    box   bSL
+    box   bTP
+    line  lE
+    line  lS
+    line  l1
+    line  l2
+
+var Pos pos = na
+
+// closed-trade history: P/L in price units for one unit of position
+var array<float> hPnl    = array.new_float()
+var array<float> hR      = array.new_float()
+var array<bool>  hStrong = array.new_bool()
+var array<int>   hDir    = array.new_int()
+var array<int>   hOut    = array.new_int()
+
+record(Pos p, float r, int out) =>
+    hPnl.push(r * p.risk)
+    hR.push(r)
+    hStrong.push(p.strong)
+    hDir.push(p.dir)
+    hOut.push(out)
+    while hR.size() > maxTrk
+        hPnl.shift()
+        hR.shift()
+        hStrong.shift()
+        hDir.shift()
+        hOut.shift()
+
+setRight(Pos p, int x) =>
+    if not na(p.bSL)
+        p.bSL.set_right(x)
+        p.bTP.set_right(x)
+    if not na(p.lE)
+        p.lE.set_x2(x)
+        p.lS.set_x2(x)
+        p.l1.set_x2(x)
+        p.l2.set_x2(x)
+
+lvlLabel(int x, float y, string txt, color col) =>
+    label.new(x, y, txt, style = label.style_label_left, color = color.new(col, 15),
+         textcolor = color.white, size = size.tiny)
+
+openPos(int dir, bool strong) =>
+    float raw  = dir == 1 ? close - (swLo - slBuf * atrR) : (swHi + slBuf * atrR) - close
+    float risk = math.max(raw, 0.1 * atrR)
+    Pos p = Pos.new(dir = dir, strong = strong, entry = close,
+         sl  = close - dir * risk,
+         tp1 = close + dir * risk,          // 1:1
+         tp2 = close + dir * risk * 2.0,    // 1:2
+         risk = risk, openBar = bar_index, stage = 0)
+    if showTZ
+        float tpFar = tpMode == "TP1" ? p.tp1 : p.tp2
+        int   x2    = bar_index + 1
+        if tzStyle == "Boxes"
+            p.bSL := box.new(bar_index, math.max(p.entry, p.sl), x2, math.min(p.entry, p.sl),
+                 border_color = tzBorders ? cSL : color.new(cSL, 100), bgcolor = tzFill ? color.new(cSL, 85) : color.new(cSL, 100))
+            p.bTP := box.new(bar_index, math.max(p.entry, tpFar), x2, math.min(p.entry, tpFar),
+                 border_color = tzBorders ? cTP : color.new(cTP, 100), bgcolor = tzFill ? color.new(cTP, 88) : color.new(cTP, 100))
+        p.lE := line.new(bar_index, p.entry, x2, p.entry, color = cEnt, width = 1, style = lineStyle(enStyleS))
+        p.lS := line.new(bar_index, p.sl,    x2, p.sl,    color = cSL, width = tzWidth, style = lineStyle(slStyleS))
+        p.l1 := line.new(bar_index, p.tp1,   x2, p.tp1,   color = tpMode == "TP2" ? color.new(cTP, 100) : cTP, width = tzWidth, style = lineStyle(tp1StyleS))
+        p.l2 := line.new(bar_index, p.tp2,   x2, p.tp2,   color = tpMode == "TP1" ? color.new(cTP, 100) : cTP, width = tzWidth, style = lineStyle(tp2StyleS))
+        if tpMode != "TP2"
+            lvlLabel(bar_index, p.tp1, "TP1: " + str.tostring(p.tp1, format.mintick), cTP)
+        if tpMode != "TP1"
+            lvlLabel(bar_index, p.tp2, "TP2: " + str.tostring(p.tp2, format.mintick), cTP)
+        lvlLabel(bar_index, p.sl, "SL: " + str.tostring(p.sl, format.mintick), cSL)
+    p
+
+// event flags
+bool evTP1L = false
+bool evTP1S = false
+bool evTP2L = false
+bool evTP2S = false
+bool evSLL  = false
+bool evSLS  = false
+bool evExL  = false
+bool evExS  = false
+bool evRev  = false
+bool evRenew = false
+
+// 1) advance the open trade (from the bar after entry; same-bar stop wins)
+if ready and not na(pos) and bar_index > pos.openBar
+    int   d     = pos.dir
+    float cR    = costPx / pos.risk
+    bool  hitSL = d == 1 ? low  <= pos.sl  : high >= pos.sl
+    bool  hit1  = d == 1 ? high >= pos.tp1 : low  <= pos.tp1
+    bool  hit2  = d == 1 ? high >= pos.tp2 : low  <= pos.tp2
+    bool  split = tpMode == "Split"
+    if hitSL
+        int   out = split and pos.stage == 1 ? OUT_TP1SL : OUT_SL
+        float r   = (out == OUT_TP1SL ? 0.0 : -1.0) - cR
+        record(pos, r, out)
+        setRight(pos, bar_index)
+        evSLL := d == 1
+        evSLS := d == -1
+        pos   := na
+    else
+        if hit1 and pos.stage == 0
+            pos.stage := 1
+            evTP1L := d == 1
+            evTP1S := d == -1
+            if tpMode == "TP1"
+                record(pos, 1.0 - cR, OUT_TP1)
+                setRight(pos, bar_index)
+                pos := na
+        if not na(pos) and hit2 and tpMode != "TP1"
+            int   out = split ? OUT_TP12 : OUT_TP2
+            float r   = (split ? 1.5 : 2.0) - cR
+            record(pos, r, out)
+            setRight(pos, bar_index)
+            if showTZ
+                label.new(bar_index, pos.tp2, "TP2 +" + str.tostring(2.0 * pos.risk, format.mintick),
+                     style = label.style_label_left, color = color.new(cTP, 15), textcolor = color.white, size = size.tiny)
+            evTP2L := d == 1
+            evTP2S := d == -1
+            pos    := na
+
+// 2) signals: suppressed while a trade is open unless Exit +/BE applies
+bool sigLong  = false
+bool sigShort = false
+if candL or candS
+    int  nd   = candL ? 1 : -1
+    bool take = na(pos)
+    if not na(pos) and earlyExit
+        bool atBE = pos.dir == 1 ? close >= pos.entry : close <= pos.entry
+        if atBE
+            float u = (close - pos.entry) * pos.dir / pos.risk
+            float r = (tpMode == "Split" and pos.stage == 1 ? 0.5 + 0.5 * u : u) - costPx / pos.risk
+            record(pos, r, OUT_EARLY)
+            setRight(pos, bar_index)
+            evExL   := pos.dir == 1
+            evExS   := pos.dir == -1
+            evRev   := nd != pos.dir
+            evRenew := nd == pos.dir
+            pos     := na
+            take    := true
+    if take
+        pos        := openPos(nd, volStrong)
+        lastSigBar := bar_index
+        sigLong    := nd == 1
+        sigShort   := nd == -1
+
+// 3) keep the open trade's zone growing with price
+if not na(pos)
+    setRight(pos, bar_index + 1)
+
+bool sigStrong = (sigLong or sigShort) and volStrong
+bool sigBuyP   = sigLong  and sigStrong
+bool sigBuyN   = sigLong  and not sigStrong
+bool sigSellP  = sigShort and sigStrong
+bool sigSellN  = sigShort and not sigStrong
+
+// ═════════════════════════════════════════════════════════════════════════════
+//  PLOTS (same set and order as the original's Style tab)
+// ═════════════════════════════════════════════════════════════════════════════
+
+color candleCol = stDir == 1 and trailL ? cCBull : stDir == -1 and trailS ? cCBear : cCNeut
+barcolor(colorBars ? candleCol : na, title = "Bar Color")
+
+plot(showTrail ? trail : na, "Smart Trail", close > trail ? cTrBull : cTrBear, trWidth, plot.style_linebr)
+
+// Trend Cloud: 5 layers between the Kalman price and the active Supertrend band
+float band = stDir == 1 ? stUp : stDn
+c0 = plot(showCloud ? kSrc : na, "— cld (i)", display = display.none)
+c1 = plot(showCloud ? kSrc + (band - kSrc) * 0.2 : na, "— cld (i)", display = display.none)
+c2 = plot(showCloud ? kSrc + (band - kSrc) * 0.4 : na, "— cld (i)", display = display.none)
+c3 = plot(showCloud ? kSrc + (band - kSrc) * 0.6 : na, "— cld (i)", display = display.none)
+c4 = plot(showCloud ? kSrc + (band - kSrc) * 0.8 : na, "— cld (i)", display = display.none)
+c5 = plot(showCloud ? band : na, "— cld (i)", display = display.none)
+fill(c0, c1, color = color.new(cCloud, math.min(100, cloudOp + 16)), title = "Cloud 1")
+fill(c1, c2, color = color.new(cCloud, math.min(100, cloudOp + 8)),  title = "Cloud 2")
+fill(c2, c3, color = color.new(cCloud, cloudOp),                     title = "Cloud 3")
+fill(c3, c4, color = color.new(cCloud, math.min(100, cloudOp + 8)),  title = "Cloud 4")
+fill(c4, c5, color = color.new(cCloud, math.min(100, cloudOp + 16)), title = "Cloud 5")
+
+// Reversal Zones: VWMA(50) ± 2–3 ATR(50)
+z1 = plot(showRZ ? vwma + 2 * atr50 : na, "— zone (i)", display = display.none)
+z2 = plot(showRZ ? vwma + 3 * atr50 : na, "— zone (i)", display = display.none)
+z3 = plot(showRZ ? vwma - 2 * atr50 : na, "— zone (i)", display = display.none)
+z4 = plot(showRZ ? vwma - 3 * atr50 : na, "— zone (i)", display = display.none)
+fill(z1, z2, color = color.new(cOB, zoneOp), title = "Overbought zone")
+fill(z3, z4, color = color.new(cOS, zoneOp), title = "Oversold zone")
+
+plotshape(sigBuyP,  "Strong Buy",  shape.labelup,      location.belowbar, cBull, text = "BUY+",  textcolor = color.white, size = size.small)
+plotshape(sigBuyN,  "Buy",         shape.triangleup,   location.belowbar, cBull, text = "BUY",   textcolor = cBull, size = size.tiny)
+plotshape(sigSellP, "Strong Sell", shape.labeldown,    location.abovebar, cBear, text = "SELL+", textcolor = color.white, size = size.small)
+plotshape(sigSellN, "Sell",        shape.triangledown, location.abovebar, cBear, text = "SELL",  textcolor = cBear, size = size.tiny)
+
+bgcolor(sigHl and sigLong ? color.new(cBull, 85) : sigHl and sigShort ? color.new(cBear, 85) : na, title = "Signal Highlight")
+
+plot(not na(pos) ? pos.entry : na, "Entry Line", cEnt, 1, plot.style_linebr, display = display.none)
+
+plotshape(evTP1L, "TP1 Long",  shape.xcross, location.abovebar, cTP, text = "TP1", textcolor = cTP, size = size.tiny)
+plotshape(evTP1S, "TP1 Short", shape.xcross, location.belowbar, cTP, text = "TP1", textcolor = cTP, size = size.tiny)
+plotshape(evTP2L, "TP2 Long",  shape.xcross, location.abovebar, cTP, text = "TP2", textcolor = cTP, size = size.tiny)
+plotshape(evTP2S, "TP2 Short", shape.xcross, location.belowbar, cTP, text = "TP2", textcolor = cTP, size = size.tiny)
+plotshape(evSLL,  "SL Long",   shape.xcross, location.belowbar, cSL, text = "SL",  textcolor = cSL, size = size.tiny)
+plotshape(evSLS,  "SL Short",  shape.xcross, location.abovebar, cSL, text = "SL",  textcolor = cSL, size = size.tiny)
+plotshape(evExL,  "Exit Long",  shape.diamond, location.abovebar, cWarn, text = "Exit", textcolor = cWarn, size = size.tiny)
+plotshape(evExS,  "Exit Short", shape.diamond, location.belowbar, cWarn, text = "Exit", textcolor = cWarn, size = size.tiny)
+
+// ═════════════════════════════════════════════════════════════════════════════
+//  MTF (confirmed previous-bar values, no repaint)
+// ═════════════════════════════════════════════════════════════════════════════
+
+[m1d, m1s, m1a] = request.security(syminfo.tickerid, tf1, mtfPack(), lookahead = barmerge.lookahead_on)
+[m2d, m2s, m2a] = request.security(syminfo.tickerid, tf2, mtfPack(), lookahead = barmerge.lookahead_on)
+[m3d, m3s, m3a] = request.security(syminfo.tickerid, tf3, mtfPack(), lookahead = barmerge.lookahead_on)
+[m4d, m4s, m4a] = request.security(syminfo.tickerid, tf4, mtfPack(), lookahead = barmerge.lookahead_on)
+[m5d, m5s, m5a] = request.security(syminfo.tickerid, tf5, mtfPack(), lookahead = barmerge.lookahead_on)
+[m6d, m6s, m6a] = request.security(syminfo.tickerid, tf6, mtfPack(), lookahead = barmerge.lookahead_on)
+
+// ═════════════════════════════════════════════════════════════════════════════
+//  TABLES
+// ═════════════════════════════════════════════════════════════════════════════
+
+color hdrBlue   = #1565C0
+color hdrOrange = #E65100
+color hdrPurple = #6A1B9A
+color tblBg     = color.new(tBgC, tBgT)
+
+var table tBt   = table.new(posOf(btPosS),   6, 14, bgcolor = tblBg, border_width = 1, border_color = tBrC, frame_color = tBrC, frame_width = 1)
+var table tDash = table.new(posOf(dashPosS), 3, 9,  bgcolor = tblBg, border_width = 1, border_color = tBrC, frame_color = tBrC, frame_width = 1)
+var table tMtf  = table.new(posOf(mtfPosS),  5, 8,  bgcolor = tblBg, border_width = 1, border_color = tBrC, frame_color = tBrC, frame_width = 1)
+
+varip bool btMerged   = false
+varip bool dashMerged = false
+
+cell(table t, int c, int r, string s, color col, color bg) =>
+    t.cell(c, r, s, text_color = col, bgcolor = bg, text_size = tSize())
+
+tfName(string tf) =>
+    int s = timeframe.in_seconds(tf)
+    s < 3600 ? str.tostring(s / 60) + "m" : s < 86400 ? str.tostring(s / 3600) + "H" : s < 604800 ? "1D" : s < 2592000 ? "1W" : "1M"
+
+mtfRow(int row, string tf, int d, float s, float a) =>
+    bool lower = timeframe.in_seconds(tf) < timeframe.in_seconds()
+    bool ok    = not lower and not na(d) and d != 0
+    cell(tMtf, 0, row, ok ? "●" : "○", ok ? (d == 1 ? cBull : cBear) : cNeut, na)
+    cell(tMtf, 1, row, tfName(tf), tHdC, na)
+    if ok
+        bool strongP = math.abs(s) >= 1.0
+        bool trendM  = not na(a) and a > 25
+        cell(tMtf, 2, row, d == 1 ? "▲ Bull" : "▼ Bear", d == 1 ? cBull : cBear, na)
+        cell(tMtf, 3, row, strongP ? "💪 Strong" : math.abs(s) >= 0.4 ? "Moderate" : "😴 Weak", strongP ? cBull : math.abs(s) >= 0.4 ? cWarn : cBear, na)
+        cell(tMtf, 4, row, trendM ? "📈 Trend" : "📊 Range", trendM ? cBull : #FF9800, na)
+    else
+        cell(tMtf, 2, row, "—", cNeut, na)
+        cell(tMtf, 3, row, "—", cNeut, na)
+        cell(tMtf, 4, row, "—", cNeut, na)
+    ok ? d : 0
+
+// mode: 0 overall, 1 all buy, 2 buy normal, 3 strong buy, 4 all sell, 5 sell normal, 6 strong sell
+statRow(int row, string name, int mode, bool major) =>
+    int   n  = 0
+    int   w  = 0
+    int   l  = 0
+    float s  = 0.0
+    float gp = 0.0
+    float gl = 0.0
+    int sz = hPnl.size()
+    if sz > 0
+        for i = 0 to sz - 1
+            int  dI = hDir.get(i)
+            bool sI = hStrong.get(i)
+            bool take = mode == 0 or (mode == 1 and dI == 1) or (mode == 2 and dI == 1 and not sI) or
+                 (mode == 3 and dI == 1 and sI) or (mode == 4 and dI == -1) or
+                 (mode == 5 and dI == -1 and not sI) or (mode == 6 and dI == -1 and sI)
+            if take
+                float v = hPnl.get(i)
+                n += 1
+                s += v
+                if hOut.get(i) == OUT_SL      // only a full stop counts as a loss (as in the original)
+                    l += 1
+                else
+                    w += 1
+                if v > 0
+                    gp += v
+                else
+                    gl -= v
+    color bg   = mode == 0 ? color.new(hdrBlue, 0) : na
+    color nmC  = mode == 1 or mode == 2 or mode == 3 ? cBull : mode == 0 ? tHdC : cBear
+    float wr   = n > 0 ? 100.0 * w / n : na
+    float pf   = gl > 0 ? gp / gl : na
+    cell(tBt, 0, row, major ? "●" : "•", cWarn, bg)
+    cell(tBt, 1, row, name + (mode == 0 ? "  " + str.tostring(n) : ""), nmC, bg)
+    cell(tBt, 2, row, str.tostring(w) + " / " + str.tostring(l), tHdC, bg)
+    cell(tBt, 3, row, na(wr) ? "—" : str.tostring(wr, "#.#") + "%", na(wr) ? cNeut : wr >= 50 ? cWarn : cBear, bg)
+    cell(tBt, 4, row, n > 0 ? fmtPx(s) : "—", n == 0 ? cNeut : s >= 0 ? cBull : cBear, bg)
+    cell(tBt, 5, row, showPF ? (na(pf) ? (n > 0 ? "∞" : "—") : str.tostring(pf, "#.##")) : "", na(pf) ? cNeut : pf >= 1 ? tHdC : cBear, bg)
+
+if barstate.islast
+    // ── backtest
+    if showBt
+        string modeT = tpMode == "Split" ? "½ TP1 + ½ TP2" : tpMode == "TP1" ? "TP1 only" : "TP2 only"
+        cell(tBt, 0, 0, "📊", tHdC, hdrOrange)
+        cell(tBt, 1, 0, "BACKTEST  " + modeT, tHdC, hdrOrange)
+        cell(tBt, 2, 0, "W / L", tHdC, hdrOrange)
+        cell(tBt, 3, 0, "WR%", tHdC, hdrOrange)
+        cell(tBt, 4, 0, "P/L", tHdC, hdrOrange)
+        cell(tBt, 5, 0, showPF ? "Profit Factor" : "", tHdC, hdrOrange)
+        statRow(1, "OVERALL", 0, true)
+        statRow(2, "▲ All BUY", 1, true)
+        statRow(3, "BUY", 2, false)
+        statRow(4, "Strong BUY", 3, false)
+        statRow(5, "▼ All SELL", 4, true)
+        statRow(6, "SELL", 5, false)
+        statRow(7, "Strong SELL", 6, false)
+        cell(tBt, 0, 8, "", tHdC, hdrPurple)
+        cell(tBt, 1, 8, "OUTCOMES", tHdC, hdrPurple)
+        cell(tBt, 2, 8, "Count", tHdC, hdrPurple)
+        cell(tBt, 3, 8, "", tHdC, hdrPurple)
+        cell(tBt, 4, 8, "P/L", tHdC, hdrPurple)
+        cell(tBt, 5, 8, "", tHdC, hdrPurple)
+        array<int>   oc = array.new_int(7, 0)
+        array<float> op = array.new_float(7, 0.0)
+        float sR = 0.0
+        if hOut.size() > 0
+            for i = 0 to hOut.size() - 1
+                int o = hOut.get(i)
+                oc.set(o, oc.get(o) + 1)
+                op.set(o, op.get(o) + hPnl.get(i))
+                sR += hR.get(i)
+        int   rWin  = tpMode == "Split" ? OUT_TP12 : tpMode == "TP1" ? OUT_TP1 : OUT_TP2
+        string wTxt = tpMode == "Split" ? "TP1 + TP2" : tpMode == "TP1" ? "TP1" : "TP2"
+        cell(tBt, 0, 9,  "✅", cBull, na)
+        cell(tBt, 1, 9,  wTxt, tHdC, na)
+        cell(tBt, 2, 9,  str.tostring(oc.get(rWin)), cBull, na)
+        cell(tBt, 4, 9,  fmtPx(op.get(rWin)), cBull, na)
+        cell(tBt, 0, 10, "➗", cWarn, na)
+        cell(tBt, 1, 10, "TP1 + SL", tHdC, na)
+        cell(tBt, 2, 10, str.tostring(oc.get(OUT_TP1SL)), cWarn, na)
+        cell(tBt, 4, 10, fmtPx(op.get(OUT_TP1SL)), cWarn, na)
+        cell(tBt, 0, 11, "✖", cBear, na)
+        cell(tBt, 1, 11, "SL (full)", tHdC, na)
+        cell(tBt, 2, 11, str.tostring(oc.get(OUT_SL)), cBear, na)
+        cell(tBt, 4, 11, fmtPx(op.get(OUT_SL)), cBear, na)
+        cell(tBt, 0, 12, "🟦", cOS, na)
+        cell(tBt, 1, 12, "Exit +/BE", tHdC, na)
+        cell(tBt, 2, 12, str.tostring(oc.get(OUT_EARLY)), cWarn, na)
+        cell(tBt, 4, 12, fmtPx(op.get(OUT_EARLY)), cWarn, na)
+        float sumP = 0.0
+        for v in hPnl
+            sumP += v
+        float avgR = hR.size() > 0 ? sR / hR.size() : na
+        tBt.cell(0, 13, modeT + "  |  SUM: " + fmtPx(sumP) + "  |  avg " + fmtSigned(avgR, "#0.00") + "R/trade" +
+             (costPx > 0 ? "  |  cost " + str.tostring(costPx) : ""), text_color = tTxC, text_size = size.tiny)
+        if not btMerged
+            tBt.merge_cells(0, 13, 5, 13)
+            btMerged := true
+
+    // ── dashboard
+    if showDash
+        float vPct = not na(volMa) and volMa > 0 ? 100.0 * (volume - volMa) / volMa : na
+        string volT = na(vPct) ? "n/a" : (vPct > 20 ? "High " : vPct < -20 ? "Low " : "Neutral ") + fmtSigned(vPct, "#0") + "%"
+        color  volC = na(vPct) ? cNeut : vPct > 20 ? cBull : vPct < -20 ? cBear : cNeut
+        float vr = na(atrPm) or atrPm == 0 ? na : atrP / atrPm
+        string volaT = na(vr) ? "—" : (vr > 1.3 ? "High " : vr < 0.9 ? "Low " : "Normal ") + str.tostring(atrP, "#0.00") + "%"
+        color  volaC = na(vr) ? cNeut : vr > 1.3 ? cBear : vr < 0.9 ? cBull : cWarn
+        string momT = (rsiV > 55 ? "Bullish " : rsiV < 45 ? "Bearish " : "Neutral ") + str.tostring(rsiV, "#0")
+        color  momC = rsiV > 55 ? cBull : rsiV < 45 ? cBear : cNeut
+        float  aS = math.abs(slope)
+        string stT = "Waiting…"
+        color  stC = cNeut
+        if not na(pos)
+            float u = (close - pos.entry) * pos.dir / pos.risk
+            stT := (pos.dir == 1 ? "In LONG " : "In SHORT ") + fmtSigned(u, "#0.00") + "R"
+            stC := u >= 0 ? cBull : cBear
+        cell(tDash, 0, 0, "⚡", cWarn, hdrBlue)
+        cell(tDash, 1, 0, "SPECTRA", tHdC, hdrBlue)
+        cell(tDash, 2, 0, syminfo.ticker, tHdC, hdrBlue)
+        cell(tDash, 0, 1, "●", stDir == 1 ? cBull : cBear, na)
+        cell(tDash, 1, 1, "Trend", tHdC, na)
+        cell(tDash, 2, 1, stDir == 1 ? "▲ BULLISH" : "▼ BEARISH", stDir == 1 ? cBull : cBear, na)
+        cell(tDash, 0, 2, "💪", cWarn, na)
+        cell(tDash, 1, 2, "Strength", tHdC, na)
+        cell(tDash, 2, 2, aS >= 1.0 ? "Strong" : aS >= 0.4 ? "Moderate" : "Weak", aS >= 1.0 ? cBull : aS >= 0.4 ? cWarn : cBear, na)
+        cell(tDash, 0, 3, "📈", cWarn, na)
+        cell(tDash, 1, 3, "Market", tHdC, na)
+        cell(tDash, 2, 3, na(adxV) ? "—" : adxV > 25 ? "Trending" : "Ranging", na(adxV) ? cNeut : adxV > 25 ? cBull : #FF9800, na)
+        cell(tDash, 0, 4, "❄", cOS, na)
+        cell(tDash, 1, 4, "Volatility", tHdC, na)
+        cell(tDash, 2, 4, volaT, volaC, na)
+        cell(tDash, 0, 5, "⚖", cWarn, na)
+        cell(tDash, 1, 5, "Volume", tHdC, na)
+        cell(tDash, 2, 5, volT, volC, na)
+        cell(tDash, 0, 6, "⚪", tTxC, na)
+        cell(tDash, 1, 6, "Momentum", tHdC, na)
+        cell(tDash, 2, 6, momT, momC, na)
+        cell(tDash, 0, 7, "⏳", cWarn, na)
+        cell(tDash, 1, 7, "Status", tHdC, na)
+        cell(tDash, 2, 7, stT, stC, na)
+        tDash.cell(0, 8, "Non-Repainting · Bar Close ✓", text_color = tTxC, text_size = size.tiny)
+        if not dashMerged
+            tDash.merge_cells(0, 8, 2, 8)
+            dashMerged := true
+
+    // ── MTF
+    if showMtf
+        cell(tMtf, 0, 0, "🔎", tHdC, hdrBlue)
+        cell(tMtf, 1, 0, "MTF PANEL", tHdC, hdrBlue)
+        cell(tMtf, 2, 0, "Trend", tHdC, hdrBlue)
+        cell(tMtf, 3, 0, "Power", tHdC, hdrBlue)
+        cell(tMtf, 4, 0, "Mode", tHdC, hdrBlue)
+        int s1 = mtfRow(1, tf1, m1d, m1s, m1a)
+        int s2 = mtfRow(2, tf2, m2d, m2s, m2a)
+        int s3 = mtfRow(3, tf3, m3d, m3s, m3a)
+        int s4 = mtfRow(4, tf4, m4d, m4s, m4a)
+        int s5 = mtfRow(5, tf5, m5d, m5s, m5a)
+        int s6 = mtfRow(6, tf6, m6d, m6s, m6a)
+        int b = 0
+        int v = 0
+        for x in array.from(s1, s2, s3, s4, s5, s6)
+            b += x == 1 ? 1 : 0
+            v += x != 0 ? 1 : 0
+        string biasT = v == 0 ? "—" : b * 2 > v ? "LONG BIAS " + str.tostring(b) + "/" + str.tostring(v) :
+             b * 2 < v ? "SHORT BIAS " + str.tostring(v - b) + "/" + str.tostring(v) : "NO CLEAR BIAS"
+        color biasC = v == 0 ? cNeut : b * 2 > v ? cBull : b * 2 < v ? cBear : cWarn
+        cell(tMtf, 0, 7, "Σ", biasC, na)
+        cell(tMtf, 1, 7, "Bias", tHdC, na)
+        cell(tMtf, 2, 7, biasT, biasC, na)
+        cell(tMtf, 3, 7, "", biasC, na)
+        cell(tMtf, 4, 7, "", biasC, na)
+
+// ═════════════════════════════════════════════════════════════════════════════
+//  ALERTS (15). Use "Once per bar close". JSON messages for webhooks.
+// ═════════════════════════════════════════════════════════════════════════════
+
+bool evTP1    = evTP1L or evTP1S
+bool evTP2    = evTP2L or evTP2S
+bool evSL     = evSLL or evSLS
+bool evEarly  = evExL or evExS
+bool evClosed = evSL or evEarly or (evTP2 and tpMode != "TP1") or (evTP1 and tpMode == "TP1")
+bool evAny    = sigLong or sigShort or evTP1 or evTP2 or evClosed
+
+alertcondition(sigBuyP,  "Strong BUY+",  '{"event":"BUY+","ticker":"{{ticker}}","tf":"{{interval}}","price":{{close}}}')
+alertcondition(sigBuyN,  "BUY",          '{"event":"BUY","ticker":"{{ticker}}","tf":"{{interval}}","price":{{close}}}')
+alertcondition(sigSellP, "Strong SELL+", '{"event":"SELL+","ticker":"{{ticker}}","tf":"{{interval}}","price":{{close}}}')
+alertcondition(sigSellN, "SELL",         '{"event":"SELL","ticker":"{{ticker}}","tf":"{{interval}}","price":{{close}}}')
+alertcondition(sigLong,  "Any BUY",      '{"event":"ANY_BUY","ticker":"{{ticker}}","tf":"{{interval}}","price":{{close}}}')
+alertcondition(sigShort, "Any SELL",     '{"event":"ANY_SELL","ticker":"{{ticker}}","tf":"{{interval}}","price":{{close}}}')
+alertcondition(sigLong or sigShort, "Any Signal", '{"event":"SIGNAL","ticker":"{{ticker}}","tf":"{{interval}}","price":{{close}}}')
+alertcondition(evTP1,    "TP1 Hit",          '{"event":"TP1","ticker":"{{ticker}}","tf":"{{interval}}","price":{{close}}}')
+alertcondition(evTP2,    "TP2 Hit",          '{"event":"TP2","ticker":"{{ticker}}","tf":"{{interval}}","price":{{close}}}')
+alertcondition(evSL,     "Stop Loss Hit",    '{"event":"SL","ticker":"{{ticker}}","tf":"{{interval}}","price":{{close}}}')
+alertcondition(evClosed, "Trade Closed",     '{"event":"CLOSED","ticker":"{{ticker}}","tf":"{{interval}}","price":{{close}}}')
+alertcondition(evEarly,  "Early Exit",       '{"event":"EARLY_EXIT","ticker":"{{ticker}}","tf":"{{interval}}","price":{{close}}}')
+alertcondition(evRev,    "Exit and Reverse", '{"event":"EXIT_REVERSE","ticker":"{{ticker}}","tf":"{{interval}}","price":{{close}}}')
+alertcondition(evRenew,  "Exit and Renew",   '{"event":"EXIT_RENEW","ticker":"{{ticker}}","tf":"{{interval}}","price":{{close}}}')
+alertcondition(evAny,    "Any Trade Event",  '{"event":"ANY","ticker":"{{ticker}}","tf":"{{interval}}","price":{{close}}}')
