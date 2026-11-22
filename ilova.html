@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Treder ilovasi — Telefonga oʻrnatish</title>
+  <meta name="description" content="Treder ilovasini Android yoki iPhone'ga bepul oʻrnating: jonli grafiklar, signallar, 3D grafik va yangiliklar bitta ilovada.">
+  <meta name="theme-color" content="#070a12">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Treder">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="treder.css?v=10">
+</head>
+<body>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Treder bosh sahifa">
+      <span class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path d="M3 17l6-6 4 4 8-8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 7h6v6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="brand-name">Treder</span>
+    </a>
+    <nav class="nav" aria-label="Boʻlimlar">
+      <a href="index.html#bozor">Bozor</a>
+      <a href="signal.html">Signal</a>
+      <a href="3d.html">3D</a>
+      <a href="signal.html#yangiliklar">Yangiliklar</a>
+      <a href="ilova.html" class="active" aria-current="page">Ilova</a>
+    </nav>
+    <div class="topbar-actions">
+      <span class="live"><span class="dot"></span>Jonli</span>
+      <button id="themeToggle" class="icon-btn" type="button" aria-label="Mavzuni almashtirish">☀︎</button>
+    </div>
+  </header>
+
+  <nav class="mobile-tabs" aria-label="Sahifalar">
+    <a href="index.html">Bosh sahifa</a>
+    <a href="signal.html">Signal</a>
+    <a href="3d.html">3D</a>
+    <a href="signal.html#yangiliklar">Yangiliklar</a>
+    <a href="ilova.html" class="active">Ilova</a>
+  </nav>
+
+  <main>
+    <section class="hero container app-hero">
+      <div class="hero-text">
+        <span class="eyebrow">Android · iPhone · Kompyuter</span>
+        <h1><span class="grad">Treder</span> ilovasini telefoningizga oʻrnating</h1>
+        <p class="lead">Jonli grafiklar, Matematik 2.6 va SPECTRA signallari, eng maqul harakat, 3D grafik va oʻzbekcha yangiliklar — bosh ekranda, alohida ilova oynasida. Bepul, Play Market shart emas, yangilanishlar oʻzi keladi.</p>
+        <div class="hero-cta">
+          <button type="button" class="btn btn-primary" data-install>📲 Ilovani oʻrnatish</button>
+          <a class="btn btn-ghost" href="index.html">Saytda davom etish</a>
+        </div>
+        <p id="installState" class="muted install-state"></p>
+      </div>
+      <div class="app-mock" aria-hidden="true">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="ps-top"><img src="icons/icon-192.png" alt="" width="22" height="22"><b>Treder</b><span class="ps-live">● Jonli</span></div>
+            <div class="ps-card ps-buy"><small>Tavsiya</small><strong>BUY</strong><span>BTC / USDT · M15</span></div>
+            <div class="ps-row"><span>Kirish zonasi</span><b class="gold">68 740 – 68 800</b></div>
+            <div class="ps-row"><span>Stop loss</span><b class="down">68 700</b></div>
+            <div class="ps-row"><span>TP1 / TP2</span><b class="up">68 960 / 69 220</b></div>
+            <div class="ps-candles"><i style="--h:40%;--c:#f6465d"></i><i style="--h:60%;--c:#16c784"></i><i style="--h:35%;--c:#f6465d"></i><i style="--h:70%;--c:#16c784"></i><i style="--h:55%;--c:#16c784"></i><i style="--h:80%;--c:#16c784"></i><i style="--h:45%;--c:#f6465d"></i><i style="--h:90%;--c:#16c784"></i></div>
+            <div class="ps-tabs"><span class="on">Bosh</span><span>Signal</span><span>3D</span><span>Yangilik</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="android" class="section container">
+      <div class="section-head"><div><h2>Android (Chrome)</h2></div></div>
+      <div class="steps">
+        <div class="step"><span class="step-n">1</span><h4>Saytni Chrome'da oching</h4><p><code>ibotovdavron.github.io/Treder</code></p></div>
+        <div class="step"><span class="step-n">2</span><h4>“Oʻrnatish” ni bosing</h4><p>Pastda chiqadigan “Treder ilovasi” bannerida yoki shu sahifadagi tugmada. Chiqmasa — Chrome menyusi <b>⋮</b> → <b>Ilovani oʻrnatish</b> (yoki <b>Bosh ekranga qoʻshish</b>).</p></div>
+        <div class="step"><span class="step-n">3</span><h4>Tasdiqlang</h4><p>“Oʻrnatish” ni bosing — Treder belgisi bosh ekranda va ilovalar roʻyxatida paydo boʻladi.</p></div>
+        <div class="step"><span class="step-n">4</span><h4>Belgidan oching</h4><p>Ilova alohida oynada, brauzer qatorisiz ochiladi. Belgini bosib tursangiz — Signal, 3D, Yangiliklar yorliqlari.</p></div>
+      </div>
+    </section>
+
+    <section id="ios" class="section container">
+      <div class="section-head"><div><h2>iPhone / iPad (Safari)</h2></div></div>
+      <div class="steps">
+        <div class="step"><span class="step-n">1</span><h4>Safari'da oching</h4><p>iPhone'da faqat <b>Safari</b> orqali oʻrnatiladi.</p></div>
+        <div class="step"><span class="step-n">2</span><h4>“Ulashish” tugmasi</h4><p>Pastdagi <b>⬆︎ Ulashish</b> (Share) belgisini bosing.</p></div>
+        <div class="step"><span class="step-n">3</span><h4>“Bosh ekranga”</h4><p>Roʻyxatdan <b>Bosh ekranga qoʻshish</b> (Add to Home Screen) ni tanlang va <b>Qoʻshish</b> ni bosing.</p></div>
+        <div class="step"><span class="step-n">4</span><h4>Tayyor</h4><p>Treder belgisi bosh ekranda. Uni bosing — ilova toʻliq ekranda ochiladi.</p></div>
+      </div>
+    </section>
+
+    <section class="section container">
+      <div class="section-head"><div><h2>Ilovada nima bor</h2></div></div>
+      <div class="dl-grid">
+        <a class="dl card" href="signal.html"><span class="dl-icon">★</span><span class="dl-text"><strong>Eng maqul harakat</strong><span class="muted">BUY / SELL / KUTISH, zona, SL, TP1, TP2</span></span><span class="dl-arrow">→</span></a>
+        <a class="dl card" href="3d.html"><span class="dl-icon">3D</span><span class="dl-text"><strong>3D jonli grafik</strong><span class="muted">Aylantirish, ichkariga kirish, Fibonachchi</span></span><span class="dl-arrow">→</span></a>
+        <a class="dl card" href="index.html#algo"><span class="dl-icon">2.6</span><span class="dl-text"><strong>Matematik 2.6 va SPECTRA</strong><span class="muted">Jonli indikatorlar va backtest</span></span><span class="dl-arrow">→</span></a>
+        <a class="dl card" href="signal.html#yangiliklar"><span class="dl-icon">📰</span><span class="dl-text"><strong>Oʻzbekcha yangiliklar</strong><span class="muted">Forex, oltin, Bitcoin, Tesla</span></span><span class="dl-arrow">→</span></a>
+      </div>
+      <p class="fine sp-note">Ilova sayt bilan bir xil: sayt yangilansa, ilova ham keyingi ochilishda yangilanadi. Internet boʻlmasa, oxirgi ochilgan sahifalar koʻrinadi, jonli narxlar esa internet qaytgach yuklanadi.</p>
+    </section>
+  </main>
+
+  <footer class="footer container">
+    <p class="muted">Bu investitsiya maslahati emas.</p>
+  </footer>
+
+  <script src="treder.js?v=10"></script>
+</body>
+</html>

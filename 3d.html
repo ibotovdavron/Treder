@@ -6,10 +6,17 @@
   <title>Treder 3D — Jonli grafik</title>
   <meta name="description" content="Jonli shamlar grafigi 3D koʻrinishda: aylantiring, shamlar orasiga kiring va Fibonachchi darajalarini qoʻying.">
   <meta name="theme-color" content="#070a12">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Treder">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="treder.css?v=9">
+  <link rel="stylesheet" href="treder.css?v=10">
   <script type="importmap">
     { "imports": { "three": "./vendor/three/three.module.min.js" } }
   </script>
@@ -31,9 +38,11 @@
       <a href="index.html#algo">Matematik 2.6</a>
       <a href="index.html#spectra">SPECTRA</a>
       <a href="signal.html#yangiliklar">Yangiliklar</a>
+      <a href="ilova.html">Ilova</a>
     </nav>
     <div class="topbar-actions">
       <span class="live"><span class="dot"></span>Jonli</span>
+      <button type="button" class="icon-btn app-btn" data-install aria-label="Ilovani oʻrnatish" title="Ilovani oʻrnatish">📲</button>
       <button id="themeToggle" class="icon-btn" type="button" aria-label="Mavzuni almashtirish">☀︎</button>
     </div>
   </header>
@@ -43,6 +52,7 @@
     <a href="signal.html">Signal</a>
     <a href="3d.html" class="active">3D</a>
     <a href="signal.html#yangiliklar">Yangiliklar</a>
+    <a href="ilova.html">Ilova</a>
   </nav>
 
   <main>
@@ -129,8 +139,8 @@
     <p class="muted">Bu investitsiya maslahati emas.</p>
   </footer>
 
-  <script src="treder.js?v=7"></script>
-  <script src="market.js?v=7"></script>
-  <script type="module" src="chart3d.js?v=8"></script>
+  <script src="treder.js?v=10"></script>
+  <script src="market.js?v=10"></script>
+  <script type="module" src="chart3d.js?v=10"></script>
 </body>
 </html>

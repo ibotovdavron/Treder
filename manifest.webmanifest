@@ -1,0 +1,24 @@
+{
+  "name": "Treder — Jonli bozor va signallar",
+  "short_name": "Treder",
+  "description": "Jonli grafiklar, Matematik 2.6 va SPECTRA signallari, eng maqul harakat, 3D grafik va oʻzbekcha moliyaviy yangiliklar.",
+  "lang": "uz",
+  "start_url": "./?source=app",
+  "scope": "./",
+  "id": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#070a12",
+  "theme_color": "#070a12",
+  "categories": ["finance", "business", "news"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Eng maqul harakat", "short_name": "Signal", "url": "./signal.html", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "3D grafik", "short_name": "3D", "url": "./3d.html", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Yangiliklar", "short_name": "Yangiliklar", "url": "./signal.html#yangiliklar", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

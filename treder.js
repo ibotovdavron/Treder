@@ -242,3 +242,84 @@ if (hasMain) {
   renderIntervals();
 }
 renderAll();
+
+// ===========================================================================
+// Mobil ilova (PWA): service worker, oʻrnatish tugmasi va banner
+// ===========================================================================
+(() => {
+  if ("serviceWorker" in navigator && location.protocol !== "file:") {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js").catch(() => {});
+    });
+  }
+
+  const standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  document.documentElement.classList.toggle("is-app", standalone);
+
+  const ua = navigator.userAgent;
+  const isIOS = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const isMobile = isIOS || /Android/i.test(ua);
+  const DISMISS_KEY = "treder:install-dismissed";
+  let deferred = null;
+
+  const dismissed = () => { try { return Date.now() - (+localStorage.getItem(DISMISS_KEY) || 0) < 7 * 864e5; } catch { return false; } };
+
+  async function install() {
+    if (deferred) {
+      deferred.prompt();
+      const choice = await deferred.userChoice.catch(() => null);
+      deferred = null;
+      if (choice && choice.outcome === "accepted") hideBanner();
+      updateButtons();
+      return;
+    }
+    // Brauzer oʻzi taklif qilmasa — yoʻriqnoma sahifasi
+    if (!/ilova\.html$/.test(location.pathname)) location.href = "ilova.html";
+    else document.getElementById(isIOS ? "ios" : "android")?.scrollIntoView({ behavior: "smooth" });
+  }
+  window.trederInstall = install;
+
+  function updateButtons() {
+    document.querySelectorAll("[data-install]").forEach((b) => {
+      b.hidden = standalone;
+      b.onclick = install;
+    });
+    const st = document.getElementById("installState");
+    if (st) {
+      st.textContent = standalone ? "✓ Ilova oʻrnatilgan va hozir ilova rejimida ochiq."
+        : deferred ? "Brauzeringiz ilovani bir bosishda oʻrnatishga tayyor."
+        : isIOS ? "iPhone/iPad: pastdagi 4 qadamni bajaring (Safari orqali)."
+        : "Brauzer menyusidan “Ilovani oʻrnatish” yoki “Bosh ekranga qoʻshish” ni tanlang.";
+    }
+  }
+
+  let banner = null;
+  function showBanner() {
+    if (banner || standalone || dismissed() || !isMobile || /ilova\.html$/.test(location.pathname)) return;
+    banner = document.createElement("div");
+    banner.className = "install-banner";
+    banner.innerHTML = `
+      <img src="icons/icon-192.png" alt="" width="40" height="40">
+      <div><b>Treder ilovasi</b><span>${isIOS ? "Bosh ekranga qoʻshib, ilova kabi oching" : "Telefoningizga bir bosishda oʻrnating"}</span></div>
+      <button type="button" class="ib-go">Oʻrnatish</button>
+      <button type="button" class="ib-x" aria-label="Yopish">✕</button>`;
+    banner.querySelector(".ib-go").onclick = install;
+    banner.querySelector(".ib-x").onclick = () => {
+      try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch {}
+      hideBanner();
+    };
+    document.body.appendChild(banner);
+  }
+  function hideBanner() { if (banner) { banner.remove(); banner = null; } }
+
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferred = e;
+    updateButtons();
+    showBanner();
+  });
+  window.addEventListener("appinstalled", () => { deferred = null; hideBanner(); updateButtons(); });
+
+  updateButtons();
+  if (isIOS) setTimeout(showBanner, 2500); // iOS'da avtomatik taklif yoʻq — oʻzimiz koʻrsatamiz
+})();
