@@ -424,3 +424,86 @@ a:hover { text-decoration: underline; }
 .news-desc { margin: 0; font-size: 13px; color: var(--muted); }
 .news-state { padding: 24px 0; }
 .widget-news { height: 640px; }
+
+/* 3D sahifa */
+.d3-stage { position: relative; height: 72vh; min-height: 520px; padding: 0; overflow: hidden; background: #080b14; }
+.d3-stage.d3-light { background: #eef1f8; }
+.d3-stage:fullscreen { height: 100vh; border-radius: 0; }
+.d3-canvas { position: absolute; inset: 0; z-index: 0; isolation: isolate; }
+.d3-canvas canvas { display: block; touch-action: none; }
+.d3-labels { position: absolute; inset: 0; pointer-events: none; }
+.d3-lbl { font-family: var(--mono); font-size: 11px; white-space: nowrap; pointer-events: none; }
+.d3-axis { color: #8b93a9; }
+.d3-light .d3-axis { color: #5b647a; }
+.d3-time { font-size: 10px; }
+.d3-live { background: #f5c451; color: #111; font-weight: 700; padding: 2px 6px; border-radius: 6px; transform: translateX(50%); }
+.d3-live.down { background: #f6465d; color: #fff; }
+.d3-fib-lbl { color: var(--c, #9fa8ff); background: rgba(8, 11, 20, .72); border: 1px solid var(--c, #9fa8ff); padding: 1px 6px; border-radius: 6px; transform: translateX(-50%); font-weight: 600; }
+.d3-light .d3-fib-lbl { background: rgba(255, 255, 255, .85); }
+
+.d3-top { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; pointer-events: none; z-index: 3; }
+.d3-title { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; background: rgba(8, 11, 20, .6); backdrop-filter: blur(8px); padding: 8px 12px; border-radius: 12px; border: 1px solid var(--border); color: #e8ebf3; }
+.d3-light .d3-title { background: rgba(255, 255, 255, .8); color: #0f172a; }
+.d3-title strong { font-size: 16px; }
+.d3-price { font-family: var(--mono); font-size: 18px; font-weight: 600; color: var(--gold); }
+.d3-chg { font-family: var(--mono); font-size: 13px; font-weight: 600; }
+.d3-top .conn { pointer-events: auto; background: rgba(8, 11, 20, .6); padding: 6px 10px; border-radius: 999px; }
+.d3-light .d3-top .conn { background: rgba(255, 255, 255, .8); }
+
+.d3-views { position: absolute; left: 12px; top: 64px; display: flex; flex-direction: column; gap: 6px; z-index: 3; }
+.d3-views button, .btn-sm {
+  font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+  background: rgba(20, 26, 42, .78); color: #e8ebf3; border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 10px; padding: 7px 11px; backdrop-filter: blur(8px); text-align: left;
+}
+.d3-light .d3-views button, .d3-light .btn-sm { background: rgba(255, 255, 255, .88); color: #0f172a; border-color: rgba(15, 23, 42, .12); }
+.d3-views button:hover, .btn-sm:hover { border-color: var(--accent); }
+.d3-views button.on, .btn-sm.on, .btn-acc { background: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important; }
+
+.d3-fib { position: absolute; right: 12px; top: 64px; width: 230px; padding: 12px; z-index: 3; display: flex; flex-direction: column; gap: 8px; background: rgba(14, 19, 32, .82); color: #e8ebf3; }
+.d3-light .d3-fib { background: rgba(255, 255, 255, .9); color: #0f172a; }
+.d3-fib-head { display: flex; flex-direction: column; gap: 2px; cursor: pointer; list-style: none; }
+.d3-fib-head::-webkit-details-marker { display: none; }
+.d3-fib-head b::after { content: " ▾"; color: var(--muted); }
+.d3-fib:not([open]) .d3-fib-head b::after { content: " ▸"; }
+.d3-fib[open] > *:not(summary) { margin-top: 8px; }
+.d3-fib:not([open]) { width: auto; }
+.d3-fib-head .muted { font-size: 12px; color: var(--gold); }
+.d3-fib-actions { display: flex; gap: 6px; }
+.d3-fib-actions .btn-sm { flex: 1; text-align: center; padding: 6px 4px; white-space: nowrap; font-size: 12px; }
+.d3-fib { gap: 0; }
+.d3-fib-list { display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto; }
+.d3-fib-list .muted { font-size: 12px; margin: 0; }
+.d3-fib-row { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-family: var(--mono); font-size: 12px; background: rgba(255, 255, 255, .05); border-radius: 8px; padding: 4px 8px; }
+.d3-fib-row button { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 13px; }
+.d3-check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.d3-check input { accent-color: var(--accent); }
+.d3-bars { justify-content: space-between; }
+.d3-bars select { font: inherit; font-size: 13px; background: rgba(255, 255, 255, .06); color: inherit; border: 1px solid var(--border); border-radius: 8px; padding: 3px 6px; }
+.d3-bars select option { background: #121827; color: #e8ebf3; }
+
+.d3-info { position: absolute; left: 12px; bottom: 44px; width: 240px; padding: 12px; z-index: 3; background: rgba(14, 19, 32, .88); color: #e8ebf3; }
+.d3-light .d3-info { background: rgba(255, 255, 255, .92); color: #0f172a; }
+.d3-info-head { display: flex; justify-content: space-between; align-items: center; font-family: var(--mono); font-size: 13px; margin-bottom: 4px; }
+.d3-info-head button { background: none; border: 0; color: var(--muted); cursor: pointer; }
+.d3-info .kv > div { padding: 5px 0; }
+.d3-tip { position: absolute; z-index: 4; pointer-events: none; font-family: var(--mono); font-size: 12px; background: rgba(8, 11, 20, .9); color: #e8ebf3; border: 1px solid var(--border-strong); border-radius: 8px; padding: 5px 8px; white-space: nowrap; }
+.d3-help { position: absolute; left: 0; right: 0; bottom: 0; margin: 0; padding: 8px 12px; font-size: 12px; color: #8b93a9; text-align: center; background: linear-gradient(transparent, rgba(8, 11, 20, .7)); pointer-events: none; z-index: 2; }
+.d3-light .d3-help { background: linear-gradient(transparent, rgba(255, 255, 255, .8)); color: #5b647a; }
+.d3-help b { color: inherit; }
+.only-touch { display: none; }
+@media (hover: none) { .only-touch { display: inline; } .only-desk { display: none; } }
+.d3-steps { margin-top: 16px; }
+
+@media (max-width: 700px) {
+  .d3-stage { height: 78vh; min-height: 560px; }
+  .d3-views { top: auto; bottom: 40px; left: 8px; right: 8px; flex-direction: row; overflow-x: auto; scrollbar-width: none; }
+  .d3-views::-webkit-scrollbar { display: none; }
+  .d3-views button { flex: none; padding: 6px 9px; font-size: 12px; }
+  .d3-fib { top: 60px; right: 8px; width: 190px; padding: 10px; gap: 6px; }
+  .d3-fib .d3-check { font-size: 12px; }
+  .d3-top { top: 8px; left: 8px; right: 8px; }
+  .d3-title strong { font-size: 14px; }
+  .d3-price { font-size: 15px; }
+  .d3-info { bottom: 88px; left: 8px; width: 200px; }
+}

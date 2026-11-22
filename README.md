@@ -11,8 +11,9 @@ Jonli bozor grafiklari va **Matematik 2.6** algoritmi signallari.
 - `algo26.js` — Matematik 2.6 algoritmining JavaScript talqini
 - `spectra.js` — SPECTRA Clone indikatorining JavaScript talqini (Kalman + Supertrend, TP/SL, backtest, MTF)
 - `signal.html` + `signal.js` — "Eng maqul harakat": barcha indikatorlar konsensusi (BUY / SELL / KUTISH, kirish zonasi, SL, TP1, TP2), aktivlar skaneri va oʻz indikatorimiz **Treder Pulse**
+- `3d.html` + `chart3d.js` — 3D jonli grafik (three.js): aylantirish, shamlar orasida uchish (WASD/QE), orqa/yon/yuqori koʻrinish, shamni bosib yaqinlashish, 3D Fibonachchi darajalari (qoʻlda va avto), EMA 20/50, hajm ustunlari
 - `news.js` — oʻzbek tilidagi jonli moliyaviy yangiliklar (Google News + Spot.uz, Gazeta.uz, Kun.uz; avtomatik tarjima)
-- `vendor/` — TradingView Lightweight Charts™ 4.2.3 (Apache 2.0)
+- `vendor/` — TradingView Lightweight Charts™ 4.2.3 (Apache 2.0), three.js r170 (MIT)
 - `downloads/` — Pine Script indikatori, qoʻllanma va Capital Guard V2 (MT5 roboti) (muallif: [@Takrorlanmas_robotlar](https://t.me/takrorlanmas_robotlar))
 
 ## Matematik 2.6

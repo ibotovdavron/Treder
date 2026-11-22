@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Treder 3D — Jonli grafik</title>
+  <meta name="description" content="Jonli shamlar grafigi 3D koʻrinishda: aylantiring, shamlar orasiga kiring va Fibonachchi darajalarini qoʻying.">
+  <meta name="theme-color" content="#070a12">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="treder.css?v=9">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three.module.min.js" } }
+  </script>
+</head>
+<body>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Treder bosh sahifa">
+      <span class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path d="M3 17l6-6 4 4 8-8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 7h6v6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="brand-name">Treder</span>
+    </a>
+    <nav class="nav" aria-label="Boʻlimlar">
+      <a href="index.html#bozor">Bozor</a>
+      <a href="signal.html">Signal</a>
+      <a href="3d.html" class="active" aria-current="page">3D</a>
+      <a href="index.html#algo">Matematik 2.6</a>
+      <a href="index.html#spectra">SPECTRA</a>
+      <a href="signal.html#yangiliklar">Yangiliklar</a>
+    </nav>
+    <div class="topbar-actions">
+      <span class="live"><span class="dot"></span>Jonli</span>
+      <button id="themeToggle" class="icon-btn" type="button" aria-label="Mavzuni almashtirish">☀︎</button>
+    </div>
+  </header>
+
+  <nav class="mobile-tabs" aria-label="Sahifalar">
+    <a href="index.html">Bosh sahifa</a>
+    <a href="signal.html">Signal</a>
+    <a href="3d.html" class="active">3D</a>
+    <a href="signal.html#yangiliklar">Yangiliklar</a>
+  </nav>
+
+  <main>
+    <section class="section container">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Uch oʻlchamli bozor</span>
+          <h2>3D jonli grafik <span class="badge-live">LIVE</span></h2>
+          <p class="muted">Grafikni aylantiring, shamlar orasiga kiring, orqa tomondan qarang va Fibonachchi darajalarini toʻgʻridan-toʻgʻri shamlar ustiga qoʻying.</p>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div id="d3Symbols" class="chips" role="tablist" aria-label="Aktivlar"></div>
+        <div id="d3Intervals" class="seg" role="group" aria-label="Vaqt oraligʻi"></div>
+      </div>
+
+      <div id="d3Stage" class="d3-stage card">
+        <div id="d3Canvas" class="d3-canvas"></div>
+
+        <div class="d3-top">
+          <div class="d3-title">
+            <strong id="d3Title">BTC / USDT</strong>
+            <span id="d3Price" class="d3-price">—</span>
+            <span id="d3Chg" class="d3-chg"></span>
+          </div>
+          <span id="d3Conn" class="conn">Ulanmoqda…</span>
+        </div>
+
+        <div class="d3-views" role="group" aria-label="Koʻrinish">
+          <button type="button" data-view="front">Old</button>
+          <button type="button" data-view="side">Yon</button>
+          <button type="button" data-view="back">Orqa</button>
+          <button type="button" data-view="top">Yuqori</button>
+          <button type="button" data-view="inside">Ichkari</button>
+          <button type="button" id="d3Rotate" aria-pressed="false">Aylanish</button>
+          <button type="button" id="d3Full" aria-label="Toʻliq ekran">⤢</button>
+        </div>
+
+        <details id="d3FibPanel" class="d3-fib card" open>
+          <summary class="d3-fib-head">
+            <b>Fibonachchi va sozlamalar</b>
+            <span id="d3FibHint" class="muted"></span>
+          </summary>
+          <div class="d3-fib-actions">
+            <button type="button" id="d3FibDraw" class="btn-sm btn-acc">+ Chizish</button>
+            <button type="button" id="d3FibAuto" class="btn-sm">Avto</button>
+            <button type="button" id="d3FibClear" class="btn-sm">Tozalash</button>
+          </div>
+          <div id="d3FibList" class="d3-fib-list"></div>
+          <label class="d3-check"><input type="checkbox" id="d3FibExt"> Maqsadlar (−0.272, −0.618)</label>
+          <label class="d3-check"><input type="checkbox" id="d3Vol" checked> Hajm ustunlari</label>
+          <label class="d3-check"><input type="checkbox" id="d3Ema" checked> EMA 20 / 50</label>
+          <label class="d3-check d3-bars">Shamlar
+            <select id="d3Count">
+              <option value="80">80</option>
+              <option value="150" selected>150</option>
+              <option value="250">250</option>
+            </select>
+          </label>
+        </details>
+
+        <div id="d3Info" class="d3-info card" hidden></div>
+        <div id="d3Tip" class="d3-tip" hidden></div>
+        <div id="d3Msg" class="chart-msg" hidden></div>
+
+        <p class="d3-help">
+          <span class="only-desk">Sichqoncha: chap — aylantirish · gʻildirak — yaqinlashish · oʻng — surish · <b>W A S D / Q E</b> — uchish · shamni bosing — yaqinlashish</span>
+          <span class="only-touch">Bir barmoq — aylantirish · ikki barmoq — yaqinlashish va surish · shamni bosing — yaqinlashish</span>
+        </p>
+      </div>
+
+      <div class="steps d3-steps">
+        <div class="step"><span class="step-n">1</span><h4>Aylantiring</h4><p>Grafikni sichqoncha yoki barmoq bilan har tomonga buring, “Orqa” bilan teskari tomondan qarang.</p></div>
+        <div class="step"><span class="step-n">2</span><h4>Ichkariga kiring</h4><p>“Ichkari” yoki W/S tugmalari bilan shamlar orasida uching. Shamni bossangiz — kamera unga yaqinlashadi.</p></div>
+        <div class="step"><span class="step-n">3</span><h4>Fibonachchi qoʻying</h4><p>“+ Chizish”, keyin swing boshi va oxiridagi shamni bosing. 0.5–0.618 “oltin zona” alohida yoritiladi.</p></div>
+        <div class="step"><span class="step-n">4</span><h4>Jonli kuzating</h4><p>Narx Binance'dan real vaqtda keladi, oxirgi sham va narx chizigʻi oʻzi yangilanadi.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer container">
+    <p>3D: <a href="https://threejs.org/" target="_blank" rel="noopener">three.js</a> (MIT). Narxlar: Binance.</p>
+    <p class="muted">Bu investitsiya maslahati emas.</p>
+  </footer>
+
+  <script src="treder.js?v=7"></script>
+  <script src="market.js?v=7"></script>
+  <script type="module" src="chart3d.js?v=8"></script>
+</body>
+</html>
